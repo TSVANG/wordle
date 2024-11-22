@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle на русском</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        #board {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .row {
+            display: flex;
+            justify-content: center;
+            margin: 5px 0;
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 25px; /* Увеличен размер шрифта */
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s, transform 0.1s;
+            margin: 0 2px;
+        }
+        .button, .menu-button {
+            padding: 10px 20px; /* Внутренние отступы для кнопок */
+            font-size: 16px; /* Размер шрифта */
+            font-weight: bold; /* Жирный шрифт */
+            color: white; /* Цвет текста */
+            background-color: #007bff; /* Основной цвет фона */
+            border: none; /* Убираем рамку */
+            border-radius: 25px; /* Закругление углов */
+            cursor: pointer; /* Курсор указателя при наведении */
+            transition: background-color 0.3s, transform 0.1s; /* Плавный переход цвета и анимация */
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Тень для кнопок */
+        }
+
+        .button:hover, .menu-button:hover {
+            background-color: #0056b3; /* Цвет фона при наведении */
+            transform: translateY(-2px); /* Легкое поднятие кнопки при наведении */
+        }
+
+        .button:active, .menu-button:active {
+            transform: scale(0.95); /* Сжатие кнопки при нажатии */
+        }
+        
+        :root {
+            --color: rgb(255, 255, 255); /* Цвет для правильной буквы */
+            --color-correct:   rgb(8, 146, 8); /* цвет клавишь */
+            --color-present:   rgb(231, 231, 3); /* цвет клавишь */
+            --color-absent:    gray; /* цвет клавишь */
+         }
+        .correct {
+            background-color: var(--color-correct);
+            color: var(--color);
+        }
+
+        .present {
+            background-color: var( --color-present);
+            color: var(--color);
+        }
+
+        .absent {
+            background-color: var( --color-absent);
+            color: var(--color);
+        }
+
+        #game {
+            display: block;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .keyboard {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 20px;
+    width: 100%; /* Установим по умолчанию на всю ширину для мобильных устройств */
+}
+
+/* Медиа-запрос для экранов шире 768px (ноутбуки и десктопы) */
+@media only screen and (min-width: 768px) {
+    .keyboard {
+        width: 400px; /* Установите желаемую ширину для ноутбуков */
+        margin: 0 auto; /* Центрируем клавиатуру */
+    }
+}
+        .keyboard-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 0px 0;
+            width: 100%;
+        }
+
+        :root {
+            --key-width: 25px; 
+            --key-height: 40px; 
+            --key-border-radius: 7px; 
+            --key-background-color: #f0f0f0; 
+            --key-active-background-color: #194fe4;
+            --key-hover-background-color: #e0e0e0; 
+        }
+
+        .key {
+            flex: 1; 
+            height: 40px; 
+            margin: 2px; 
+            border: 1px solid #000; 
+            border-radius: 7px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background-color: #f0f0f0; 
+            cursor: pointer; 
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .key:hover {
+            background-color: #e0e0e0;
+        }
+
+        .key.correct {
+            background-color: var(--color-correct); 
+            color: var(--color);  /*цвет букв на клавиатуре выненесена в перерменную*/
+        }
+
+        .key.present {
+            background-color: var( --color-present);
+            color: var(--color); /*цвет букв на клавиатуре выненесена в перерменную*/
+        }
+
+        .key.absent {
+            background-color: var( --color-absent);
+            color: var(--color); /*цвет букв на клавиатуре выненесена в перерменную*/
+        }
+
+        .key:active {
+            transform: scale(0.95);
+            background-color: #a2a4a8; 
+        }
+        .menu-button {
+            display: inline-block; /* Чтобы кнопка находилась рядом с таймером */
+            cursor: pointer;
+            margin-right: 10px; /* Отступ справа от кнопки */
+        }
+
+        /* Стили для кнопки меню при наведении */
+        .menu-button:hover {
+            opacity: 0.8; /* Изменяем прозрачность при наведении */
+        }
+
+        .menu-icon {
+            width: 30px; /* Установите желаемую ширину */
+            height: auto; /* Сохраняет пропорции изображения */
+        }
+
+        /* ТЕМАНЯ ТЕМА */
+
+        .theme-label {
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+.theme-toggle {
+    -webkit-appearance: none; /* Убирает стандартный стиль для WebKit-браузеров */
+    appearance: none; /* Убирает стандартный стиль для других браузеров */
+    width: 60px;
+    height: 30px;
+    border-radius: 50px;
+    background: #ccc;
+    position: relative;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.theme-toggle:checked {
+    background: #4caf50; /* Цвет фона для включенного состояния */
+}
+
+.theme-toggle::before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: white;
+    transition: transform 0.3s;
+}
+
+.theme-toggle:checked::before {
+    transform: translateX(30px); /* Перемещение ползунка при включении */
+}
+
+body.dark-mode {
+    background-color: #121212; /* Цвет фона для темной темы */
+    color: white; /* Цвет текста для темной темы */
+}
+
+body.dark-mode .key {
+    background-color: #333; /* Цвет кнопок при темной теме */
+    color: white; /* Цвет текста кнопок при темной теме */
+}
+
+body.dark-mode .keyboard {
+    background-color: #222; /* Цвет клавиатуры при темной теме */
+}
+
+body.dark-mode .cell.correct {
+    background-color: #0bff0b; /* Цвет для правильной буквы */
+}
+
+body.dark-mode .cell.present {
+    background-color: #f1ff0b; /* Цвет для присутствующей буквы */
+}
+
+body.dark-mode .cell.absent {
+    background-color: #666; /* Цвет для отсутствующей буквы */
+}
+
+body.dark-mode .button {
+    background-color: #444; /* Цвет кнопок при темной теме */
+    color: white; /* Цвет текста кнопок при темной теме */
+}
+
+body.dark-mode .popup {
+    background-color: #333; /* Цвет фона попапа при темной теме */
+    color: white; /* Цвет текста в попапе при темной теме */
+}
+body.dark-mode .key.correct {
+    background-color: rgb(8, 146, 8); /* Цвет для правильной буквы при темной теме */
+    color: white; /* Цвет текста на клавишах при темной теме */
+}
+
+body.dark-mode .key.present {
+    background-color: rgb(231, 231, 3); /* Цвет для присутствующей буквы при темной теме */
+    color: black; /* Цвет текста на клавишах при темной теме */
+}
+
+body.dark-mode .key.absent {
+    background-color: gray; /* Цвет для отсутствующей буквы при темной теме */
+    color: white; /* Цвет текста на клавишах при темной теме */
+}
+body.dark-mode .button, body.dark-mode .menu-button {
+    background-color: #555; /* Цвет фона для темной темы */
+    color: white; /* Цвет текста для темной темы */
+}
+
+body.dark-mode .button:hover, body.dark-mode .menu-button:hover {
+    background-color: #444; /* Цвет фона при наведении для темной темы */
+}
+
+            .timer {
+        font-size: 19px; /* Размер шрифта для времени */
+        padding: 10px; /* Внутренние отступы */
+        border: 2px solid #000; /* Цвет рамки */
+        border-radius: 10px; /* Закругление углов */
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Тень */
+        display: inline-block; /* Чтобы рамка обтекала содержимое */
+        margin: 20px center; /* Для центровки и отступов */
+        text-align: center; /* Выравнивание текста по центру */
+         }
+         .popup {
+            display: none; /* Скрыто по умолчанию */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgb(255, 255, 255); /* Цвет фона меню */
+            border: 2px solid #000; /* Цвет рамки */
+            border-radius: 10px; /* Закругление углов */
+            padding: 20px; /* Внутренние отступы */
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* Тень */
+            z-index: 1000; /* Помещаем выше других элементов */
+        }
+
+        .popup-content {
+            text-align: center; /* Центрировать текст */
+        }
+
+        .popup button {
+            display: block; /* Каждая кнопка будет на новой строке */
+            margin: 10px auto; /* Центровать кнопки */
+        }
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 2px solid #000;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .cell.correct,
+        .cell.present,
+        .cell.absent {
+            animation: pulse 0.5s; 
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>  
+
+    <div id="game">
+        <div id="menuButton" class="menu-button">
+            <img src="menu_icon.png" alt="Меню" class="menu-icon" />  <!-- Здесь вставь изображение для кнопки меню -->
+        </div>
+        <div id="timer" class="timer">00:00</div>
+        <div id="menuPopup" class="popup">
+            <div class="popup-content">
+                <h2>Меню</h2>
+                <div id="difficultySection">
+                    <label for="difficultySelect">Выберите уровень сложности:</label>
+                    <select id="difficultySelectMenu">
+                        <option value="4">4 буквы</option>
+                        <option value="5">5 букв</option>
+                        <option value="6">6 букв</option>
+                    </select>
+                </div>
+                <button id="settingsButton" class="button">Настройки</button>
+                <button id="setWordButton" class="button">Загадать слово</button>
+                <button id="statsButton" class="button">Статистика</button>
+                <button id="rulesButton" class="button">Правила игры</button>
+                <button id="closeMenuButton" class="button">Закрыть</button>
+            </div>
+        </div>
+
+        <div id="settingsPopup" class="popup">
+            <div class="popup-content">
+                <h2>Настройки</h2>
+                <label for="darkModeSwitch" class="theme-label">Темная тема</label>
+                <input type="checkbox" id="darkModeSwitch" class="theme-toggle">
+                <button id="closeSettingsButton">Закрыть</button>
+            </div>
+        </div>
+
+        <div id="setWordPopup" class="popup">
+            <div class="popup-content">
+                <h2>Загадать слово</h2>
+                <input type="text" id="setWordInput" placeholder="Введите слово (4-11 букв)">
+                <button id="generateLinkButton">Сгенерировать ссылку</button>
+                <button id="closeSetWordButton">Закрыть</button>
+            </div>
+        </div>
+
+        <div id="statsPopup" class="popup">
+            <div class="popup-content">
+                <h2>Статистика</h2>
+                <p>Здесь будет статистика игры.</p>
+                <button id="closeStatsButton">Закрыть</button>
+            </div>
+        </div>
+
+
+        <div id="board"></div>
+        <p id="message"></p>
+        
+        <div class="keyboard">
+            <div class="keyboard-row">
+                <div class="key">Й</div>
+                <div class="key">Ц</div>
+                <div class="key">У</div>
+                <div class="key">К</div>
+                <div class="key">Е</div>
+                <div class="key">Н</div>
+                <div class="key">Г</div>
+                <div class="key">Ш</div>
+                <div class="key">Щ</div>
+                <div class="key">З</div>
+                <div class="key">Х</div>
+            </div>
+            <div class="keyboard-row">
+                <div class="key">Ф</div>
+                <div class="key">Ы</div>
+                <div class="key">В</div>
+                <div class="key">А</div>
+                <div class="key">П</div>
+                <div class="key">Р</div>
+                <div class="key">О</div>
+                <div class="key">Л</div>
+                <div class="key">Д</div>
+                <div class="key">Ж</div>
+                <div class="key">Э</div>
+            </div>
+            <div class="keyboard-row">
+                <div class="key">Я</div>
+                <div class="key">Ч</div>
+                <div class="key">С</div>
+                <div class="key">М</div>
+                <div class="key">И</div>
+                <div class="key">Т</div>
+                <div class="key">Ь</div>
+                <div class="key">Б</div>
+                <div class="key">Ю</div>
+                <div class="key delete">⬅️</div> 
+            </div>
+            <div class="keyboard-row">
+                <div class="key lightbulb" style="background-color: #f0f0f0;" data-hint="true">Подсказка</div> <!-- Кнопка подсказки если менять не забыть поменять  if (letter === 'Подсказка') --> 
+                <div class="key check">ПРОВЕРИТЬ СЛОВО</div> <!-- если менять не забыть поменять  if (letter === 'ПРОВЕРИТЬ СЛОВО') -->
+            </div>
+        </div>
+    
+
+
+        <div id="popup">
+            <p id="popupMessage"></p>
+            <p id="popupTime"></p>
+            <button id="restartButton" class="button">Начать заново</button>
+        </div> 
+    </div>
+
+    <script>
+        const words4 = ["ДЕЛО", "ДЕНЬ", "РУКА", "ЛИЦО"];
+        const words5 = ["СЛОВО", "МЕСТО"]; 
+        const words6 = ["РАБОТА", "ВОПРОС"];
+        let words = words5; 
+        let validWords = []; 
+
+        let currentWord = ""; 
+        let attempts = 0; 
+        let usedWords = []; 
+        let isProcessing = false; 
+
+        fetch('dictionary.json')
+            .then(response => response.json())
+            .then(data => {
+                validWords = data.words; 
+                createBoard(); 
+                document.querySelector('.key.check').addEventListener('click', checkWord); 
+            })
+            .catch(error => console.error('Ошибка при загрузке слов:', error));
+
+            let timer; 
+let timeElapsed = 0; 
+let isTimerRunning = false; // Флаг для отслеживания состояния таймера
+
+function startTimer() {
+    if (isTimerRunning) return; // Не запускайте, если таймер уже запущен
+    isTimerRunning = true; // Устанавливаем флаг
+
+    timeElapsed = 0; 
+    timer = setInterval(() => {
+        timeElapsed++;
+        updateTimerDisplay(); 
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timer); 
+    isTimerRunning = false; // Сбрасываем флаг
+}
+
+function resetTimer() {
+    stopTimer(); 
+    timeElapsed = 0; 
+    updateTimerDisplay(); 
+}
+
+                function updateTimerDisplay() {
+            const minutes = String(Math.floor(timeElapsed / 60)).padStart(2, '0'); // Форматируем минуты
+            const seconds = String(timeElapsed % 60).padStart(2, '0'); // Форматируем секунды
+            document.getElementById('timer').textContent = `${minutes}:${seconds}`; // Обновляем текст
+        }
+
+// Обновите событие для клавиш ввод с клавиатуры 
+document.addEventListener('keydown', (event) => {
+    const key = event.key; // Получаем нажатую клавишу
+
+    if (isProcessing) return; // Если в процессе обработки, выходим
+
+    // Проверяем, является ли нажатая клавиша буквой
+    if (key.length === 1 && /^[А-Яа-яЁё]$/.test(key)) {
+        addLetter(key.toUpperCase()); // Приводим к верхнему регистру
+    } else if (key === 'Backspace') {
+        removeLetter();
+    } else if (key === 'Enter') {
+        checkWord();
+    }
+});
+
+function addLetter(letter) {
+    if (isProcessing) return; // Если в процессе обработки, выходим
+    isProcessing = true; // Устанавливаем флаг, чтобы предотвратить дальнейшую обработку
+
+    const rowCells = document.getElementsByClassName('row')[attempts]?.children; // Получаем текущее состояние ячеек
+
+    if (currentWord.length < words[0].length) {
+        // Проверяем, если в текущей ячейке уже есть буква с подсказкой
+        if (rowCells[currentWord.length].style.color === 'rgba(0, 0, 0, 0.3)') {
+            // Убираем букву из подсказки и сбрасываем стиль
+            rowCells[currentWord.length].textContent = ''; // Удаляем текст
+            rowCells[currentWord.length].style.color = ''; // Сбрасываем цвет
+            rowCells[currentWord.length].classList.remove('correct'); // Удаляем класс правильного ответа, если он есть
+        }
+
+        currentWord += letter; // Добавляем новую букву
+        updateBoard(); // Обновляем состояние доски
+    }
+
+    setTimeout(() => {
+        isProcessing = false; // Сбрасываем флаг после небольшой задержки
+    }, 100); // Задержка по вкусу (например, 100 мс).
+}
+
+// После изменений, любой ввод после нажатия кнопки 💡 будет игнорировать символы, которые не должны появляться.
+
+document.querySelectorAll('.key').forEach(key => {
+    key.addEventListener('click', () => {
+        const letter = key.textContent;
+
+        // Игнорируем обработку для кнопки подсказки
+        if (letter === 'Подсказка') {
+            return; // Прекращаем дальнейшую обработку
+        } 
+         // Игнорируем обработку для кнопки подсказки
+        if (letter === 'ПРОВЕРИТЬ СЛОВО') {
+            return; // Прекращаем дальнейшую обработку
+        }
+
+        // Если все в норме, обрабатываем нажатия на клавиши
+        if (isProcessing) return; 
+                
+        if (letter === '⬅️') {
+            removeLetter();
+        } else {
+            addLetter(letter);
+        }
+    });
+});
+
+        
+
+        function removeLetter() {
+            if (currentWord.length > 0) {
+                currentWord = currentWord.slice(0, -1);
+                updateBoard();
+            }
+        }
+
+        function updateBoard() {
+            const rowCells = document.getElementsByClassName('row')[attempts]?.children;
+            if (!rowCells) return; 
+
+            for (let i = 0; i < currentWord.length; i++) {
+                if (i < rowCells.length) {
+                    rowCells[i].textContent = currentWord[i];
+                }
+            }
+            for (let i = currentWord.length; i < rowCells.length; i++) {
+                rowCells[i].textContent = '';
+            }
+        }
+
+        function showPopup(message, time) {
+            document.getElementById('popupMessage').textContent = message; 
+            document.getElementById('popupTime').textContent = `Время: ${time}`; 
+            document.getElementById('popup').style.display = 'block'; 
+        }
+
+        let correctLetters = []; // Массив для хранения отгаданных букв.
+
+function createBoard() {
+    const board = document.getElementById('board');
+    board.innerHTML = ''; 
+    const wordLength = words[0].length; 
+    for (let i = 0; i < 6; i++) { 
+        const row = document.createElement('div');
+        row.className = 'row';
+        for (let j = 0; j < wordLength; j++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            row.appendChild(cell);
+        }
+        board.appendChild(row);
+    }
+    targetWord = getNewWord(); 
+    startTimer(); 
+    correctLetters = Array(targetWord.length).fill(false); // Инициализация массива отгаданных букв.
+}
+
+function checkWord() {
+    const message = document.getElementById('message');
+    if (currentWord.length !== words[0].length) {
+        message.textContent = "Пожалуйста, введите " + words[0].length + "-буквенное слово.";
+        return; 
+    }
+
+    const currentDifficultyWords = validWords[`${words[0].length}`];
+    if (!currentDifficultyWords.includes(currentWord)) {
+        message.textContent = "Такого слова нет в базе игры.";
+        return; 
+    }
+
+    const rowCells = document.getElementsByClassName('row')[attempts].children;
+    const letterCount = {}; 
+
+    for (let letter of targetWord) {
+        letterCount[letter] = (letterCount[letter] || 0) + 1;
+    }
+
+    const guessedLetterCount = {}; 
+
+    for (let i = 0; i < words[0].length; i++) {
+        if (currentWord[i] === targetWord[i]) {
+            rowCells[i].textContent = currentWord[i];
+            rowCells[i].classList.add('correct'); 
+            markKey(currentWord[i], 'correct');  
+            guessedLetterCount[currentWord[i]] = (guessedLetterCount[currentWord[i]] || 0) + 1; 
+            letterCount[currentWord[i]]--;
+            correctLetters[i] = true; // Запоминаем, что буква угадана
+        }
+    }
+
+    for (let i = 0; i < words[0].length; i++) {
+        if (rowCells[i].classList.contains('correct')) {
+            continue;
+        }
+
+        if (targetWord.includes(currentWord[i]) && (letterCount[currentWord[i]] > 0)) {
+            rowCells[i].textContent = currentWord[i];
+            rowCells[i].classList.add('present'); 
+            markKey(currentWord[i], 'present'); 
+            guessedLetterCount[currentWord[i]] = (guessedLetterCount[currentWord[i]] || 0) + 1; 
+            letterCount[currentWord[i]]--; 
+        } else {
+            rowCells[i].textContent = currentWord[i];
+            rowCells[i].classList.add('absent'); 
+            markKey(currentWord[i], 'absent'); 
+        }
+    }
+
+    attempts++;
+
+    if (currentWord === targetWord) {
+        const timeSpent = document.getElementById('timer').textContent; 
+        showPopup(`Поздравляю, вы угадали слово: ${targetWord}!`, timeSpent);
+        stopTimer(); 
+    } else if (attempts === 6) {
+        showPopup(`Вы исчерпали все попытки! Загаданное слово: ${targetWord}`, document.getElementById('timer').textContent);
+        stopTimer(); 
+    } else {
+        message.textContent = `Попробуйте еще раз! Осталось попыток: ${6 - attempts}`;
+    }
+
+    currentWord = ""; 
+}
+
+
+    document.getElementById('restartButton').addEventListener('click', () => {
+        document.getElementById('popup').style.display = 'none'; 
+        attempts = 0; 
+        currentWord = ""; 
+        resetKeyboard(); 
+        resetTimer(); 
+        createBoard(); 
+        hintIndex = 0; // Сбросить индекс подсказки при начале новой игры
+    });
+
+        function clearCurrentWord() {
+            currentWord = ""; 
+            const rowCells = document.getElementsByClassName('row')[attempts].children;
+            for (let i = 0; i < rowCells.length; i++) {
+                rowCells[i].textContent = ""; 
+            }
+        }
+
+        function markKey(letter, newState) {
+            const key = [...document.querySelectorAll('.key')].find(k => k.textContent === letter);
+            const priority = {
+                'correct': 1,
+                'present': 2,
+                'absent': 3
+            };
+
+            if (key) {
+                const currentStates = ['correct', 'present', 'absent'].find(state => key.classList.contains(state));
+                if (currentStates) {
+                    if (priority[newState] < priority[currentStates]) {
+                        key.classList.remove(currentStates);
+                    } else if (priority[newState] >= priority[currentStates]) {
+                        return; 
+                    }
+                }
+                key.classList.add(newState);
+            }
+        }
+
+        function getNewWord() {
+            let newWord;
+            do {
+                newWord = words[Math.floor(Math.random() * words.length)];
+            } while (usedWords.includes(newWord)); 
+            usedWords.push(newWord); 
+            return newWord;
+        }
+
+        function resetKeyboard() {
+            document.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('correct', 'present', 'absent'); 
+            });
+        }
+        
+
+        const menuButton = document.getElementById('menuButton');
+const menuPopup = document.getElementById('menuPopup');
+const closeMenuButton = document.getElementById('closeMenuButton');
+
+menuButton.addEventListener('click', () => {
+    menuPopup.style.display = 'block'; // Показываем меню
+});
+
+closeMenuButton.addEventListener('click', () => {
+    menuPopup.style.display = 'none'; // Закрываем меню
+});
+
+// Переносим функционал выбора уровня сложности
+const difficultySelectMenu = document.getElementById('difficultySelectMenu');
+difficultySelectMenu.addEventListener('change', () => {
+    stopTimer(); // Остановите текущий таймер
+    const difficulty = difficultySelectMenu.value;
+    if (difficulty === "4") {
+        words = words4;
+    } else if (difficulty === "5") {
+        words = words5;
+    } else if (difficulty === "6") {
+        words = words6;
+    }
+    attempts = 0; 
+    currentWord = ""; 
+    usedWords = []; 
+    createBoard(); 
+    resetKeyboard(); 
+    startTimer(); // Запускаем новый таймер
+});
+
+const settingsButton = document.getElementById('settingsButton');
+const settingsPopup = document.getElementById('settingsPopup');
+const closeSettingsButton = document.getElementById('closeSettingsButton');
+const darkModeSwitch = document.getElementById('darkModeSwitch');
+
+settingsButton.addEventListener('click', () => {
+    settingsPopup.style.display = 'block'; // Показываем настройки
+});
+
+closeSettingsButton.addEventListener('click', () => {
+    settingsPopup.style.display = 'none'; // Закрываем настройки
+});
+
+// Обработка переключателя темной темы
+darkModeSwitch.addEventListener('change', () => {
+    document.body.classList.toggle('dark-mode'); // Переключаем класс
+});
+
+const setWordButton = document.getElementById('setWordButton');
+const setWordPopup = document.getElementById('setWordPopup');
+const closeSetWordButton = document.getElementById('closeSetWordButton');
+const setWordInput = document.getElementById('setWordInput');
+const generateLinkButton = document.getElementById('generateLinkButton');
+
+setWordButton.addEventListener('click', () => {
+    setWordPopup.style.display = 'block'; // Показываем меню для задания слова
+});
+
+closeSetWordButton.addEventListener('click', () => {
+    setWordPopup.style.display = 'none'; // Закрываем меню
+});
+
+generateLinkButton.addEventListener('click', () => {
+    const word = setWordInput.value.trim();
+    if (word.length < 4 || word.length > 11) {
+        alert("Слово должно содержать от 4 до 11 букв.");
+        return;
+    }
+    // Здесь добавь логику для генерации ссылки с загаданным словом
+    alert(`Ссылка на игровое слово: yourgameurl.com?word=${word}`);
+});
+
+const statsButton = document.getElementById('statsButton');
+const statsPopup = document.getElementById('statsPopup');
+const closeStatsButton = document.getElementById('closeStatsButton');
+
+statsButton.addEventListener('click', () => {
+    statsPopup.style.display = 'block'; // Показываем статистику
+});
+
+closeStatsButton.addEventListener('click', () => {
+    statsPopup.style.display = 'none'; // Закрываем статистику
+});
+
+let hintIndex = 0; // Переменная вне функции для отслеживания позиции подсказки
+
+document.querySelector('.key.lightbulb').addEventListener('click', () => {
+    console.log(`Подсказка нажата.`);
+    
+    // Ищем первую букву, которая не была угадана
+    while (hintIndex < targetWord.length && correctLetters[hintIndex]) {
+        hintIndex++; // Находим следующую букву, которая не была отгадана
+    }
+
+    // Если есть буква для подсказки
+    if (hintIndex < targetWord.length) {
+        const rowCells = document.getElementsByClassName('row')[attempts].children;
+        const currentLetter = targetWord[hintIndex];
+
+        // Проверяем, была ли эта буква уже показана
+        if (rowCells[hintIndex].textContent === '') {
+            rowCells[hintIndex].textContent = currentLetter; // Показываем букву
+        
+            // Убираем зеленый цвет
+            rowCells[hintIndex].classList.remove('correct'); 
+        
+            // Добавляем стиль для легкой прозрачности
+            rowCells[hintIndex].style.color = 'rgba(0, 0, 0, 0.3)'; // Устанавливаем цвет буквы с прозрачностью
+        
+            // Обновляем клавиатуру
+            markKey(currentLetter, 'correct'); // Окрашиваем клавишу в зеленый
+        }
+        // Увеличиваем индекс для следующей попытки подсказки в следующий раз
+        hintIndex++;
+    } else {
+        console.log("Все буквы уже угаданы или показаны.");
+    }
+});
+
+
+    </script>
+
+</body>
+</html>
