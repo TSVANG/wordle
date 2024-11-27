@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wordle на русском</title>
+    <link rel="icon" href="path_to_your_image.ico" type="image/x-icon">
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,24 +21,26 @@
             flex-direction: column;
             align-items: center;
             margin-top: 20px;
+            width: 100%; /* Максимальная ширина */
         }
         .row {
             display: flex;
-            justify-content: center;
+            justify-content: center; 
             margin: 5px 0;
+            width: 85%; /* Ряд занимает всю ширину */
         }
         .cell {
-            width: 40px;
-            height: 40px;
+            flex: 1; /* Ячейки занимают равное пространство */
+            height: 50px; /* Высота ячейки */
             border: 1px solid #000;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 25px; /* Увеличен размер шрифта */
+            font-size: 25px; /* Размер шрифта */
             border-radius: 5px;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
             transition: background-color 0.2s, transform 0.1s;
-            margin: 0 2px;
+            margin: 0 2px; /* Отступы между ячейками */
         }
         .button, .menu-button {
             padding: 10px 20px; /* Внутренние отступы для кнопок */
@@ -90,9 +94,14 @@
         .keyboard {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    margin-top: 20px;
-    width: 100%; /* Установим по умолчанию на всю ширину для мобильных устройств */
+    align-items: stretch; /* Растягивает строки клавиш по ширине */
+    margin-top: 20px; 
+    width: 100%; /* Установлено на 100%, чтобы занимать всю ширину */
+    position: fixed; 
+    bottom: 0; 
+    left: 0; 
+    z-index: 10; 
+    background-color: white; /* Добавляем белый фон */
 }
 
 /* Медиа-запрос для экранов шире 768px (ноутбуки и десктопы) */
@@ -100,13 +109,21 @@
     .keyboard {
         width: 400px; /* Установите желаемую ширину для ноутбуков */
         margin: 0 auto; /* Центрируем клавиатуру */
+        left: 50%; /* Сдвигаем в центр */
+        transform: translateX(-50%); /* Корректируем центрирование */
+    }
+}
+
+@media only screen and (min-width: 768px) {
+    #board {
+        width: 400px; /* Устанавливаем максимальную ширину для игрового поля */
+        margin: 0 auto; /* Центрируем игровое поле */
     }
 }
         .keyboard-row {
             display: flex;
-            justify-content: space-between;
-            margin: 0px 0;
-            width: 100%;
+            justify-content: space-between; /* Равномерное распределение клавиш */
+            width: 100%; /* Это гарантирует, что строка займет всю ширину клавиатуры */
         }
 
         :root {
@@ -119,18 +136,18 @@
         }
 
         .key {
-            flex: 1; 
-            height: 40px; 
-            margin: 2px; 
-            border: 1px solid #000; 
-            border-radius: 7px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            background-color: #f0f0f0; 
-            cursor: pointer; 
-            transition: background-color 0.2s, transform 0.1s;
-        }
+    flex: 1; /* Каждая клавиша будет равномерно заполнять строку */
+    height: 40px; 
+    margin: 2px; 
+    border: 1px solid #000; 
+    border-radius: 7px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    background-color: #f0f0f0; 
+    cursor: pointer; 
+    transition: background-color 0.2s, transform 0.1s;
+}
 
         .key:hover {
             background-color: #e0e0e0;
@@ -348,7 +365,7 @@ body.dark-mode .button:hover, body.dark-mode .menu-button:hover {
                     <label for="difficultySelect">Выберите уровень сложности:</label>
                     <select id="difficultySelectMenu">
                         <option value="4">4 буквы</option>
-                        <option value="5">5 букв</option>
+                        <option value="5" selected>5 букв</option> <!-- Установка выбранного значения -->
                         <option value="6">6 букв</option>
                     </select>
                 </div>
@@ -445,25 +462,28 @@ body.dark-mode .button:hover, body.dark-mode .menu-button:hover {
     </div>
 
     <script>
-        const words4 = ["ДЕЛО", "ДЕНЬ", "РУКА", "ЛИЦО"];
-        const words5 = ["СЛОВО", "МЕСТО"]; 
-        const words6 = ["РАБОТА", "ВОПРОС"];
-        let words = words5; 
-        let validWords = []; 
+        let validWords = {}; // Для проверки существующих слов
+        let wordsOne = {};   // Для загаданного слова
+        let words = [];      // Для хранение текущего уровня сложности
 
         let currentWord = ""; 
         let attempts = 0; 
         let usedWords = []; 
         let isProcessing = false; 
 
+        // Загружаем слова из dictionary.json
         fetch('dictionary.json')
-            .then(response => response.json())
-            .then(data => {
-                validWords = data.words; 
-                createBoard(); 
-                document.querySelector('.key.check').addEventListener('click', checkWord); 
-            })
-            .catch(error => console.error('Ошибка при загрузке слов:', error));
+    .then(response => response.json())
+    .then(data => {
+        validWords = data.words;
+        wordsOne = data.wordsOne;
+
+        // Выберите уровень сложности по умолчанию - 5 букв
+        words = wordsOne["5"];  
+        createBoard(); 
+        document.querySelector('.key.check').addEventListener('click', checkWord); 
+    })
+    .catch(error => console.error('Ошибка при загрузке слов:', error));
 
             let timer; 
 let timeElapsed = 0; 
@@ -594,10 +614,13 @@ document.querySelectorAll('.key').forEach(key => {
 
         let correctLetters = []; // Массив для хранения отгаданных букв.
 
+// Функция для создания игрового поля
 function createBoard() {
     const board = document.getElementById('board');
     board.innerHTML = ''; 
-    const wordLength = words[0].length; 
+    const wordLength = words[0].length; // Длина слова для текущего уровня сложности
+    
+    // Создаем 6 рядов для игры
     for (let i = 0; i < 6; i++) { 
         const row = document.createElement('div');
         row.className = 'row';
@@ -608,9 +631,8 @@ function createBoard() {
         }
         board.appendChild(row);
     }
-    targetWord = getNewWord(); 
-    startTimer(); 
-    correctLetters = Array(targetWord.length).fill(false); // Инициализация массива отгаданных букв.
+    targetWord = getNewWord(); // Генерация загаданного слова
+    startTimer(); // Запуск таймера
 }
 
 function checkWord() {
@@ -720,14 +742,15 @@ function checkWord() {
             }
         }
 
-        function getNewWord() {
-            let newWord;
-            do {
-                newWord = words[Math.floor(Math.random() * words.length)];
-            } while (usedWords.includes(newWord)); 
-            usedWords.push(newWord); 
-            return newWord;
-        }
+// Функция для получения нового загаданного слова
+function getNewWord() {
+    let newWord;
+    do {
+        newWord = words[Math.floor(Math.random() * words.length)]; // Выбор случайного слова из текущего массива
+    } while (usedWords.includes(newWord)); 
+    usedWords.push(newWord); 
+    return newWord;
+}
 
         function resetKeyboard() {
             document.querySelectorAll('.key').forEach(key => {
@@ -753,13 +776,10 @@ const difficultySelectMenu = document.getElementById('difficultySelectMenu');
 difficultySelectMenu.addEventListener('change', () => {
     stopTimer(); // Остановите текущий таймер
     const difficulty = difficultySelectMenu.value;
-    if (difficulty === "4") {
-        words = words4;
-    } else if (difficulty === "5") {
-        words = words5;
-    } else if (difficulty === "6") {
-        words = words6;
-    }
+
+    // Устанавливаем слова в зависимости от выбранного уровня сложности из wordsOne
+    words = wordsOne[difficulty];  
+
     attempts = 0; 
     currentWord = ""; 
     usedWords = []; 
