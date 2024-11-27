@@ -462,6 +462,9 @@ body.dark-mode .button:hover, body.dark-mode .menu-button:hover {
     </div>
 
     <script>
+        // Инициализация VK Bridge
+        vkBridge.send("VKWebAppInit", {});
+        
         let validWords = {}; // Для проверки существующих слов
         let wordsOne = {};   // Для загаданного слова
         let words = [];      // Для хранение текущего уровня сложности
