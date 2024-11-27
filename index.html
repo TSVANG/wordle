@@ -15,7 +15,7 @@
             width: 100%;
             overflow-x: hidden;
         }
-        
+
         #board {
             display: flex;
             flex-direction: column;
@@ -464,25 +464,7 @@ body.dark-mode .button:hover, body.dark-mode .menu-button:hover {
     <script>
         // Инициализация VK Bridge
         vkBridge.send("VKWebAppInit", {});
-
-                // Функция для отображения баннерной рекламы
-                function showBannerAd() {
-            vkBridge.send('VKWebAppShowBannerAd', {
-                banner_location: 'bottom'
-            })
-            .then((data) => { 
-                if (data.result) {
-                    console.log("Баннерная реклама отобразилась");
-                }
-            })
-            .catch((error) => {
-                // Ошибка
-                console.log("Ошибка при отображении баннера:", error);
-            });
-        }
-
-        // Запустите функцию для показа баннера после инициализации приложения
-        showBannerAd();
+        
         
         let validWords = {}; // Для проверки существующих слов
         let wordsOne = {};   // Для загаданного слова
