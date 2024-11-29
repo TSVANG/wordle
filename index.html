@@ -56,7 +56,7 @@
         }
 
         .button:hover, .menu-button:hover {
-            background-color: #0056b3; /* Цвет фона при наведении */
+           /* background-color: #0056b3; /* Цвет фона при наведении */
             transform: translateY(-2px); /* Легкое поднятие кнопки при наведении */
         }
 
@@ -176,11 +176,13 @@
             display: inline-block; /* Чтобы кнопка находилась рядом с таймером */
             cursor: pointer;
             margin-right: 10px; /* Отступ справа от кнопки */
+            background: transparent; /* Убираем фон */
         }
 
         /* Стили для кнопки меню при наведении */
         .menu-button:hover {
             opacity: 0.8; /* Изменяем прозрачность при наведении */
+            background: transparent; /* Поддерживаем прозрачный фон при наведении  */
         }
 
         .menu-icon {
