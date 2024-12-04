@@ -56,7 +56,7 @@
         }
 
         .button:hover, .menu-button:hover {
-            background-color: #0056b3; /* Цвет фона при наведении */
+           /* background-color: #0056b3; /* Цвет фона при наведении */
             transform: translateY(-2px); /* Легкое поднятие кнопки при наведении */
         }
 
@@ -176,11 +176,13 @@
             display: inline-block; /* Чтобы кнопка находилась рядом с таймером */
             cursor: pointer;
             margin-right: 10px; /* Отступ справа от кнопки */
+            background: transparent; /* Убираем фон */
         }
 
         /* Стили для кнопки меню при наведении */
         .menu-button:hover {
             opacity: 0.8; /* Изменяем прозрачность при наведении */
+            background: transparent; /* Поддерживаем прозрачный фон при наведении  */
         }
 
         .menu-icon {
@@ -365,8 +367,13 @@ body.dark-mode .button:hover, body.dark-mode .menu-button:hover {
                     <label for="difficultySelect">Выберите уровень сложности:</label>
                     <select id="difficultySelectMenu">
                         <option value="4">4 буквы</option>
-                        <option value="5" selected>5 букв</option> <!-- Установка выбранного значения -->
+                        <option value="5" selected>5 букв</option> 
                         <option value="6">6 букв</option>
+                        <option value="7">7 букв</option>
+                        <option value="8">8 букв</option>
+                        <option value="9">9 букв</option>
+                        <option value="10">10 букв</option>
+                        <option value="11">11 букв</option>
                     </select>
                 </div>
                 <button id="settingsButton" class="button">Настройки</button>
