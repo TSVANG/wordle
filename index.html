@@ -1044,6 +1044,13 @@ function showNotification(message) {
     }, 3000); // Уведомление будет отображаться 3 секунды
 }
 
+const rulesButton = document.getElementById('rulesButton'); // Получаем кнопку "Правила игры"
+
+// Добавляем обработчик события для кнопки "Правила игры"
+rulesButton.addEventListener('click', () => {
+    window.location.href = 'instructions.html'; // Перенаправление на страницу с инструкцией
+});
+
 
     </script>
 
