@@ -828,9 +828,7 @@ function checkWord() {
     } else if (attempts === 6) {
         showPopup(`Вы исчерпали все попытки! Загаданное слово: ${targetWord}`, document.getElementById('timer').textContent);
         stopTimer(); 
-    } else {
-        message.textContent = `Попробуйте еще раз! Осталось попыток: ${6 - attempts}`;
-    }
+    } 
 
     currentWord = ""; 
 }
