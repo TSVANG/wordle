@@ -12,16 +12,16 @@
             text-align: center;
             padding: 20px;
         }
-
+    
         h1 {
             color: #007bff;
         }
-
+    
         h2 {
             margin-top: 20px;
             color: #555;
         }
-
+    
         .container {
             max-width: 800px;
             margin: 0 auto;
@@ -29,37 +29,40 @@
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            border: 2px solid #ccc; /* Добавим серую рамку */
+            border: 2px solid #aaa; /* Изменённый цвет рамки на более серый */
         }
-
+    
+        p {
+            margin: -2px 0; /* Установите меньшее значение для вертикального отступа */
+        }
+    
         .cell {
-    display: flex; /* Это по умолчанию в .cell. */
-    justify-content: center;
-    align-items: center;
-    width: 50px; /* Установите ширину */
-    height: 50px; /* Установите высоту */
-    border: 2px solid #000;
-    border-radius: 5px;
-    margin: 5px;
-    font-size: 20px; /* Размер текста */
-}
-
-
+            display: flex; /* Это по умолчанию в .cell. */
+            justify-content: center;
+            align-items: center;
+            width: 50px; /* Установите ширину */
+            height: 50px; /* Установите высоту */
+            border: 2px solid #000;
+            border-radius: 5px;
+            margin: 5px;
+            font-size: 20px; /* Размер текста */
+        }
+    
         .correct {
             background-color: rgb(8, 146, 8); /* Зелёный цвет */
             color: white; /* Цвет текста */
         }
-
+    
         .present {
             background-color: rgb(231, 231, 3); /* Желтый цвет */
-            color: black;
+            color: white;
         }
-
+    
         .absent {
             background-color: gray; /* Серый цвет */
             color: white;
         }
-
+    
         .button {
             display: inline-block;
             margin-top: 20px;
@@ -72,11 +75,11 @@
             text-decoration: none;
             transition: background-color 0.3s;
         }
-
+    
         .button:hover {
             background-color: #0056b3;
         }
-
+    
         .instructions {
             text-align: left;
             margin-top: 20px;
@@ -96,8 +99,8 @@
         <div class="cell absent">О</div>
        </div>
 
-        <h2>Объяснение клеток поля</h2>
-        <div style="border: 2px solid gray; padding: 10px; border-radius: 12px; margin: 10px; background-color: #f0f0f0;">
+       
+        <div style="border: 2px solid #f0f0f0; padding: 10px; border-radius: 12px; margin: 10px; background-color: #f0f0f0;">
             <!-- Первая строка -->
             <div style="display: flex; align-items: center;">
                 <div class="cell absent" style="width: 30px; height: 30px; margin: 0 5px;">Д</div>
@@ -119,7 +122,7 @@
             </div>
         </div>
 
-        <p>Еще одна попытка найти совпадающие буквы в целевом слове:</p>
+        <h4>Еще одна попытка найти совпадающие буквы в целевом слове:</h4>
         <div class="cells-container" style="display: flex; justify-content: center; margin: 20px 0;">
         <div class="cell correct">Р</div>
         <div class="cell correct">Е</div>
@@ -128,7 +131,7 @@
         <div class="cell absent">А</div>
        </div>
         
-        <h2>Уже близко!</h2>
+        <h3>Уже близко!</h3>
         <div class="cells-container" style="display: flex; justify-content: center; margin: 20px 0;">
         <div class="cell correct">Р</div>
         <div class="cell correct">Е</div>
@@ -137,7 +140,7 @@
         <div class="cell correct">А</div>
        </div>
         
-        <h2>Слово разгадано! 🏆</h2>
+        <h3>Слово разгадано! 🏆</h3>
         <a href="#" class="button" id="closeInstructionsButton">Закрыть инструкцию</a>
     </div>
 
