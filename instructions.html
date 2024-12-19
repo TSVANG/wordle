@@ -33,17 +33,17 @@
         }
 
         .cell {
-            display: inline-block;
-            width: 50px;
-            height: 50px;
-            border: 2px solid #000;
-            border-radius: 5px;
-            margin: 5px;
-            font-size: 20px; /* Размер текста в клетке */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    display: flex; /* Это по умолчанию в .cell. */
+    justify-content: center;
+    align-items: center;
+    width: 50px; /* Установите ширину */
+    height: 50px; /* Установите высоту */
+    border: 2px solid #000;
+    border-radius: 5px;
+    margin: 5px;
+    font-size: 20px; /* Размер текста */
+}
+
 
         .correct {
             background-color: rgb(8, 146, 8); /* Зелёный цвет */
@@ -88,38 +88,54 @@
         <h1>Как играть в Wordle</h1>
         <p>Вы должны угадать скрытое слово за 6 попыток, а цвет букв изменится, чтобы показать, насколько вы близки.</p>
         <p>Чтобы начать игру, просто введите любое слово, например:</p>
-        
+        <div class="cells-container" style="display: flex; justify-content: center; margin: 20px 0;">
         <div class="cell correct">Р</div>
         <div class="cell present">А</div>
         <div class="cell absent">Д</div>
         <div class="cell absent">И</div>
         <div class="cell absent">О</div>
-        <p>Слово: <strong>РАДИО</strong></p>
+       </div>
 
         <h2>Объяснение клеток поля</h2>
-        <div style="border: 2px solid gray; padding: 10px; border-radius: 5px; margin: 10px;">
-            <p>• Д, И, О — Серый цвет: буквы <strong>точно нет</strong> в целом слове.</p>
-            <p>• А — Желтый цвет: буква <strong>есть в слове</strong>, но <strong>не на своем месте</strong>.</p>
-            <p>• Р — Зеленый цвет: буква <strong>есть в слове</strong> и <strong>стоит на своем месте</strong>.</p>
+        <div style="border: 2px solid gray; padding: 10px; border-radius: 12px; margin: 10px; background-color: #f0f0f0;">
+            <!-- Первая строка -->
+            <div style="display: flex; align-items: center;">
+                <div class="cell absent" style="width: 30px; height: 30px; margin: 0 5px;">Д</div>
+                <div class="cell absent" style="width: 30px; height: 30px; margin: 0 5px;">И</div>
+                <div class="cell absent" style="width: 30px; height: 30px; margin: 0 5px;">О</div>
+                <span style="margin-left: 10px;">— Серый цвет: буквы <strong>точно нет</strong> в целом слове.</span>
+            </div>
+        
+            <!-- Вторая строка -->
+            <div style="display: flex; align-items: center; margin-top: 5px;">
+                <div class="cell present" style="width: 30px; height: 30px; margin: 0 5px;">А</div>
+                <span style="margin-left: 10px;">— Желтый цвет: буква <strong>есть в слове</strong>, но <strong>не на своем месте</strong>.</span>
+            </div>
+        
+            <!-- Третья строка -->
+            <div style="display: flex; align-items: center; margin-top: 5px;">
+                <div class="cell correct" style="width: 30px; height: 30px; margin: 0 5px;">Р</div>
+                <span style="margin-left: 10px;">— Зеленый цвет: буква <strong>есть в слове</strong> и <strong>стоит на своем месте</strong>.</span>
+            </div>
         </div>
 
         <p>Еще одна попытка найти совпадающие буквы в целевом слове:</p>
-        
+        <div class="cells-container" style="display: flex; justify-content: center; margin: 20px 0;">
         <div class="cell correct">Р</div>
         <div class="cell correct">Е</div>
         <div class="cell absent">Ч</div>
         <div class="cell correct">К</div>
         <div class="cell absent">А</div>
-        <p>Слово: <strong>РЕЧКА</strong></p>
-
+       </div>
+        
         <h2>Уже близко!</h2>
-        <div style="display: flex; justify-content: center; margin: 20px 0;"></div>
+        <div class="cells-container" style="display: flex; justify-content: center; margin: 20px 0;">
         <div class="cell correct">Р</div>
         <div class="cell correct">Е</div>
         <div class="cell correct">П</div>
         <div class="cell correct">К</div>
         <div class="cell correct">А</div>
-        <p>Слово: <strong>РЕПКА</strong></p>
+       </div>
         
         <h2>Слово разгадано! 🏆</h2>
         <a href="#" class="button" id="closeInstructionsButton">Закрыть инструкцию</a>
