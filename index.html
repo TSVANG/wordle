@@ -14,6 +14,8 @@
             padding: 0;
             width: 100%;
             overflow-x: hidden;
+            background-color: rgb(239, 255, 250); /* Устанавливаем фон для игры */
+            color: black; /* Цвет текста по умолчанию */
            
         }
 
@@ -88,6 +90,8 @@
             display: block;
             width: 100%;
             margin: 0 auto;
+          /*  background-color: rgb(239, 255, 250); /* Устанавливаем красный фон для игры */
+          /*  min-height: 100vh; /* Устанавливаем минимальную высоту, чтобы занять весь экран */
         }
 
         .keyboard {
@@ -314,7 +318,7 @@ body.dark-mode .button {
 }
 
 body.dark-mode .popup {
-    background-color: #333; /* Цвет фона попапа при темной теме */
+    background-color: #121212; /* Цвет фона попапа при темной теме */
     color: white; /* Цвет текста в попапе при темной теме */
 }
 body.dark-mode .key.correct {
@@ -332,7 +336,7 @@ body.dark-mode .key.absent {
     color: white; /* Цвет текста на клавишах при темной теме */
 }
 body.dark-mode .button, body.dark-mode .menu-button {
-    background-color: #555; /* Цвет фона для темной темы */
+    background-color: #555; /* Цвет кнопок для темной темы */
     color: white; /* Цвет текста для темной темы */
 }
 
@@ -356,16 +360,23 @@ body.dark-mode .key.lightbulb {
     background-color: #333; /* Цвет фона для кнопки подсказки в темной теме */
     color: white; /* Цвет текста для кнопки подсказки в темной теме */
 }
-            .timer {
-        font-size: 19px; /* Размер шрифта для времени */
-        padding: 10px; /* Внутренние отступы */
-        border: 2px solid #000; /* Цвет рамки */
-        border-radius: 10px; /* Закругление углов */
-        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Тень */
-        display: inline-block; /* Чтобы рамка обтекала содержимое */
-        margin: 20px center; /* Для центровки и отступов */
-        text-align: center; /* Выравнивание текста по центру */
-         }
+.timer {
+    font-size: 19px; /* Размер шрифта для времени */
+    padding: 10px; /* Внутренние отступы */
+    border: 2px solid #000; /* Цвет рамки */
+    border-radius: 10px; /* Закругление углов */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Тень */
+    display: inline-block; /* Чтобы рамка обтекала содержимое */
+    margin: 20px center; /* Для центровки и отступов */
+    text-align: center; /* Выравнивание текста по центру */
+    background-color: #ffffff; /* Фон для часов в светлой теме */
+}
+
+/* Для темной темы */
+body.dark-mode .timer {
+    background-color: #555555; /* Фон для часов в темной теме */
+    color: white; /* Цвет текста для часов в темной теме */
+}
          .popup {
             display: none; /* Скрыто по умолчанию */
             position: fixed;
