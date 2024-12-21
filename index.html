@@ -248,43 +248,53 @@
 
         /* ТЕМАНЯ ТЕМА */
 
-        .theme-label {
-    font-size: 18px;
-    margin-right: 10px;
+        .theme-container {
+    display: flex; /* Используем flexbox для выравнивания элементов */
+    align-items: center; /* Выравниваем по центру вертикально */
+    justify-content: center; /* Центрируем элементы по горизонтали */
 }
 
+.theme-icon {
+    width: 30px; /* Ширина иконок */
+    height: 30px; /* Высота иконок */
+    margin: 0 5px; /* Отступы между иконками и ползунком */
+}
+
+/* Стили для ползунка */
 .theme-toggle {
-    -webkit-appearance: none; /* Убирает стандартный стиль для WebKit-браузеров */
+    -webkit-appearance: none; /* Убираем стандартный стиль для WebKit-браузеров */
     appearance: none; /* Убирает стандартный стиль для других браузеров */
-    width: 60px;
-    height: 30px;
-    border-radius: 50px;
-    background: #ccc;
-    position: relative;
-    outline: none;
-    cursor: pointer;
-    transition: background 0.3s;
+    width: 60px; /* Ширина ползунка */
+    height: 30px; /* Высота ползунка */
+    border-radius: 50px; /* Закругление углов */
+    background: #ccc; /* Фон ползунка */
+    position: relative; /* Для позиционирования индикатора */
+    outline: none; /* Убираем обводку */
+    cursor: pointer; /* Изменение курсора на указатель */
+    transition: background 0.3s; /* Плавный переход фона */
+}
+
+.theme-toggle::before {
+    content: ""; /* Содержимое для ползунка */
+    position: absolute; /* Абсолютное позиционирование относительно ползунка */
+    top: 4px; /* Расположение сверху */
+    left: 4px; /* Расположение слева */
+    width: 22px; /* Ширина индикатора */
+    height: 22px; /* Высота индикатора */
+    border-radius: 50%; /* Закругление углов индикатора */
+    background: yellow; /* Цвет индикатора в светлой теме (цвет солнца) */
+    transition: transform 0.3s; /* Плавный переход позиции индикатора */
 }
 
 .theme-toggle:checked {
     background: #4caf50; /* Цвет фона для включенного состояния */
 }
 
-.theme-toggle::before {
-    content: "";
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: white;
-    transition: transform 0.3s;
+.theme-toggle:checked::before {
+    transform: translateX(30px); /* Перемещение индикатора при включении */
+    background: lightgray; /* Цвет индикатора в темной теме (цвет луны) */
 }
 
-.theme-toggle:checked::before {
-    transform: translateX(30px); /* Перемещение ползунка при включении */
-}
 
 body.dark-mode {
     background-color: #121212; /* Цвет фона для темной темы */
@@ -480,11 +490,14 @@ body.dark-mode .notification {
     }
 }
 
-/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!   Скрыть кнопку в интерфейсе загадать слово      !!!!!!!!!!!!!!!!!*/
+/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!   Скрыть кнопку в интерфейсе загадать слово   и настройки    !!!!!!!!!!!!!!!!!*/
         #setWordButton {
     display: none; 
-}
-/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!   Скрыть кнопку в интерфейсе загадать слово      !!!!!!!!!!!!!!!!!*/
+        }
+        #settingsButton {
+    display: none;
+        }
+/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!   Скрыть кнопку в интерфейсе загадать слово и настройки      !!!!!!!!!!!!!!!!!*/
 
     </style>
 </head>
@@ -511,11 +524,18 @@ body.dark-mode .notification {
                         <button class="difficulty-button" data-value="11">11</button>
                     </div>
                 </div>
-                <button id="settingsButton" class="button">Настройки</button>
-                <button id="setWordButton" class="button">Загадать слово</button>
+                <div class="theme-container">
+                    <img src="sun.png" alt="Солнце" class="theme-icon" id="sunIcon">
+                    <input type="checkbox" id="darkModeSwitch" class="theme-toggle">
+                    <img src="moon.png" alt="Луна" class="theme-icon" id="moonIcon">
+                </div>
+                <button id="settingsButton" class="button">Настройки</button>               
                 <button id="statsButton" class="button">Статистика</button>
                 <button id="rulesButton" class="button">Правила игры</button>
                 <button id="closeMenuButton" class="button">Закрыть</button>
+
+                <button id="settingsButton" class="button">Настройки</button>    <!--скрыто  -->
+                <button id="setWordButton" class="button">Загадать слово</button> <!--скрыто  -->
             </div>
         </div>
 
