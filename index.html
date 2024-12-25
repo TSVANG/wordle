@@ -14,6 +14,9 @@
             padding: 0;
             width: 100%;
             overflow-x: hidden;
+            background-color: rgb(239, 255, 250); /* Устанавливаем фон для игры */
+            color: black; /* Цвет текста по умолчанию */
+           
         }
 
         #board {
@@ -41,6 +44,7 @@
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
             transition: background-color 0.2s, transform 0.1s;
             margin: 0 2px; /* Отступы между ячейками */
+            background-color: #f0f0f0; /* Устанавливаем более яркий цвет для ячеек */
         }
         .button, .menu-button {
             padding: 10px 20px; /* Внутренние отступы для кнопок */
@@ -55,10 +59,7 @@
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Тень для кнопок */
         }
 
-        .button:hover, .menu-button:hover {
-           /* background-color: #0056b3; /* Цвет фона при наведении */
-            transform: translateY(-2px); /* Легкое поднятие кнопки при наведении */
-        }
+
 
         .button:active, .menu-button:active {
             transform: scale(0.95); /* Сжатие кнопки при нажатии */
@@ -86,10 +87,32 @@
         }
 
         #game {
+            position: relative;
             display: block;
             width: 100%;
             margin: 0 auto;
+          /*  background-color: rgb(239, 255, 250); /* Устанавливаем красный фон для игры */
+          /*  min-height: 100vh; /* Устанавливаем минимальную высоту, чтобы занять весь экран */
         }
+        #menuButton {
+    position: absolute; /* Используем абсолютное позиционирование для возможности перемещения */
+    top: 10px; /* Отступ от верхнего края */
+    left: 20px; /* Отступ от левого края */
+    z-index: 100; /* Убедитесь, что кнопка располагается выше других элементов */
+}
+
+/* Позиционирование для экранов шире 770px */
+/* Позиционирование для экранов шире 770px, кнопка остается фиксированной относительно центра */
+@media only screen and (min-width: 770px) {
+    #menuButton {
+        top: 0px; /* Поддерживаем отступ сверху */
+        left: 50%; /* Позиционируем по центру */
+        transform: translateX(-180px); /* Смещаем на 220px влево от центра */
+    }
+}
+
+
+
 
         .keyboard {
     display: flex;
@@ -104,8 +127,60 @@
     background-color: white; /* Добавляем белый фон */
 }
 
-/* Медиа-запрос для экранов шире 768px (ноутбуки и десктопы) */
-@media only screen and (min-width: 768px) {
+                                    /* кнопки выбора уровня  */
+
+.difficulty-label {
+    font-weight: bold; /* Делаем текст жирным */
+    font-size: 18px; /* Размер шрифта надписи */
+    margin-bottom: 10px; /* Отступ снизу, чтобы отделить от кнопок */
+}                                   
+#difficultyButtons {
+    display: flex;
+    justify-content: center; /* Центрируем кнопки */
+    margin-top: 10px; /* Отступ сверху */
+}
+
+
+
+/* Стили для кнопок с возможностью изменения отступа между кнопками */
+@media only screen and (min-width: 10px) {
+    #difficultyButtons {
+        max-width: 400px; /* Максимальная ширина для контейнера с кнопками */
+        margin: 0 auto; /* Центрируем контейнер на странице */
+    }
+.difficulty-button {
+    padding: 8px 14px; /* Внутренние отступы для кнопок */
+    font-size: 24px; /* Размер шрифта */
+    font-weight: bold; /* Жирный шрифт */
+    color: white; /* Цвет текста */
+    background-color: #aba8c771; /* Основной цвет фона */
+    border: none; /* Убираем рамку */
+    border-radius: 5px; /* Закругление углов */
+    cursor: pointer; /* Курсор указателя при наведении */
+    margin: 0 10px; /* Отступы между кнопками (можно менять значение 10px) */
+    transition: background-color 0.3s, transform 0.1s; /* Плавный переход цвета и анимация */
+    }
+}
+
+.difficulty-button:hover {
+    background-color:  #aba8c771; /* Цвет фона при наведении */
+    transform: translateY(-2px); /* Легкое поднятие кнопки при наведении */
+}
+
+.difficulty-button:active {
+    transform: scale(0.95); /* Сжатие кнопки при нажатии */
+}
+
+.difficulty-button.selected {
+    background-color: rgb(8, 146, 8); /* Цвет для выбранной кнопки */
+}
+
+                                    /* кнопки выбора уровня  */
+
+
+
+/* Медиа-запрос для экранов шире 770px (ноутбуки и десктопы) */
+@media only screen and (min-width: 770px) {
     .keyboard {
         width: 400px; /* Установите желаемую ширину для ноутбуков */
         margin: 0 auto; /* Центрируем клавиатуру */
@@ -114,7 +189,7 @@
     }
 }
 
-@media only screen and (min-width: 768px) {
+@media only screen and (min-width: 770px) {
     #board {
         width: 400px; /* Устанавливаем максимальную ширину для игрового поля */
         margin: 0 auto; /* Центрируем игровое поле */
@@ -177,6 +252,7 @@
             cursor: pointer;
             margin-right: 10px; /* Отступ справа от кнопки */
             background: transparent; /* Убираем фон */
+            box-shadow: none; /* Убираем тень */
         }
 
         /* Стили для кнопки меню при наведении */
@@ -188,47 +264,59 @@
         .menu-icon {
             width: 30px; /* Установите желаемую ширину */
             height: auto; /* Сохраняет пропорции изображения */
+            
+            
         }
 
         /* ТЕМАНЯ ТЕМА */
 
-        .theme-label {
-    font-size: 18px;
-    margin-right: 10px;
+        .theme-container {
+    display: flex; /* Используем flexbox для выравнивания элементов */
+    align-items: center; /* Выравниваем по центру вертикально */
+    justify-content: center; /* Центрируем элементы по горизонтали */
 }
 
+.theme-icon {
+    width: 30px; /* Ширина иконок */
+    height: 30px; /* Высота иконок */
+    margin: 0 5px; /* Отступы между иконками и ползунком */
+}
+
+/* Стили для ползунка */
 .theme-toggle {
-    -webkit-appearance: none; /* Убирает стандартный стиль для WebKit-браузеров */
+    -webkit-appearance: none; /* Убираем стандартный стиль для WebKit-браузеров */
     appearance: none; /* Убирает стандартный стиль для других браузеров */
-    width: 60px;
-    height: 30px;
-    border-radius: 50px;
-    background: #ccc;
-    position: relative;
-    outline: none;
-    cursor: pointer;
-    transition: background 0.3s;
+    width: 60px; /* Ширина ползунка */
+    height: 30px; /* Высота ползунка */
+    border-radius: 50px; /* Закругление углов */
+    background: #ccc; /* Фон ползунка */
+    position: relative; /* Для позиционирования индикатора */
+    outline: none; /* Убираем обводку */
+    cursor: pointer; /* Изменение курсора на указатель */
+    transition: background 0.3s; /* Плавный переход фона */
+}
+
+.theme-toggle::before {
+    content: ""; /* Содержимое для ползунка */
+    position: absolute; /* Абсолютное позиционирование относительно ползунка */
+    top: 4px; /* Расположение сверху */
+    left: 4px; /* Расположение слева */
+    width: 22px; /* Ширина индикатора */
+    height: 22px; /* Высота индикатора */
+    border-radius: 50%; /* Закругление углов индикатора */
+    background: yellow; /* Цвет индикатора в светлой теме (цвет солнца) */
+    transition: transform 0.3s; /* Плавный переход позиции индикатора */
 }
 
 .theme-toggle:checked {
     background: #4caf50; /* Цвет фона для включенного состояния */
 }
 
-.theme-toggle::before {
-    content: "";
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: white;
-    transition: transform 0.3s;
+.theme-toggle:checked::before {
+    transform: translateX(30px); /* Перемещение индикатора при включении */
+    background: lightgray; /* Цвет индикатора в темной теме (цвет луны) */
 }
 
-.theme-toggle:checked::before {
-    transform: translateX(30px); /* Перемещение ползунка при включении */
-}
 
 body.dark-mode {
     background-color: #121212; /* Цвет фона для темной темы */
@@ -262,7 +350,7 @@ body.dark-mode .button {
 }
 
 body.dark-mode .popup {
-    background-color: #333; /* Цвет фона попапа при темной теме */
+    background-color: #121212; /* Цвет фона попапа при темной теме */
     color: white; /* Цвет текста в попапе при темной теме */
 }
 body.dark-mode .key.correct {
@@ -280,36 +368,65 @@ body.dark-mode .key.absent {
     color: white; /* Цвет текста на клавишах при темной теме */
 }
 body.dark-mode .button, body.dark-mode .menu-button {
-    background-color: #555; /* Цвет фона для темной темы */
+    background-color: #555; /* Цвет кнопок для темной темы */
     color: white; /* Цвет текста для темной темы */
 }
 
 body.dark-mode .button:hover, body.dark-mode .menu-button:hover {
     background-color: #444; /* Цвет фона при наведении для темной темы */
 }
+/* Ячейки для темной темы */
+body.dark-mode .cell {
+    background-color: #444; /* Цвет фона для ячеек в темной теме */
+    color: white; /* Цвет текста для ячеек в темной теме */
+}
 
-            .timer {
-        font-size: 19px; /* Размер шрифта для времени */
-        padding: 10px; /* Внутренние отступы */
-        border: 2px solid #000; /* Цвет рамки */
-        border-radius: 10px; /* Закругление углов */
-        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Тень */
-        display: inline-block; /* Чтобы рамка обтекала содержимое */
-        margin: 20px center; /* Для центровки и отступов */
-        text-align: center; /* Выравнивание текста по центру */
-         }
+/* Обычно кнопка подсказки */
+.key.lightbulb {
+    background-color: #f0f0f0; /* Цвет фона в обычном режиме */
+    color: black; /* Цвет текста в обычном режиме */
+}
+
+/* Кнопка подсказки в темной теме */
+body.dark-mode .key.lightbulb {
+    background-color: #333; /* Цвет фона для кнопки подсказки в темной теме */
+    color: white; /* Цвет текста для кнопки подсказки в темной теме */
+}
+.timer {
+    
+    font-size: 19px; /* Размер шрифта для времени */
+    padding: 10px; /* Внутренние отступы */
+    border: 2px solid #000; /* Цвет рамки */
+    border-radius: 10px; /* Закругление углов */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Тень */
+    display: inline-block; /* Чтобы рамка обтекала содержимое */
+    margin: 20px center; /* Для центровки и отступов */
+    text-align: center; /* Выравнивание текста по центру */
+    background-color: #ffffff; /* Фон для часов в светлой теме */
+    margin-top: 10px; /* Добавленный отступ сверху */
+}
+
+/* Для темной темы */
+body.dark-mode .timer {
+    background-color: #555555; /* Фон для часов в темной теме */
+    color: white; /* Цвет текста для часов в темной теме */
+}
          .popup {
             display: none; /* Скрыто по умолчанию */
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            width: 100%; /* Используйте 100% ширины экрана */
+            height: 100%; /* Используйте 100% высоты экрана */
             background-color: rgb(255, 255, 255); /* Цвет фона меню */
             border: 2px solid #000; /* Цвет рамки */
             border-radius: 10px; /* Закругление углов */
-            padding: 20px; /* Внутренние отступы */
+            padding: 40px; /* Внутренние отступы */
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* Тень */
             z-index: 1000; /* Помещаем выше других элементов */
+            padding: 50% 0% 20px 0%; /* Выравнивание кнопок меню по центру экрана */ /* пример 10px сверху, 15px справа, 20px снизу, 5px слева */
+            
         }
 
         .popup-content {
@@ -326,13 +443,17 @@ body.dark-mode .button:hover, body.dark-mode .menu-button:hover {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: white;
-            border: 2px solid #000;
+            background-color: rgb(80, 74, 74); /* Светлый фон для нормальной темы */
+    color: #e0e0e0; /* Темный текст */
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
             z-index: 1000;
         }
+        body.dark-mode #popup {
+            background-color: #e0e0e0; /* светлый фон для темной темы */
+            color: rgb(80, 74, 74); /* темный текст для темной темы */
+}
 
         .cell.correct,
         .cell.present,
@@ -351,36 +472,94 @@ body.dark-mode .button:hover, body.dark-mode .menu-button:hover {
                 transform: scale(1);
             }
         }
+
+ .notification {
+    position: fixed;
+    top: -100px; /* Скрываем уведомление выше экрана по умолчанию */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgb(80, 74, 74); /* Светлый фон для нормальной темы */
+    color: #e0e0e0; /* Темный текст */
+    padding: 15px 20px; /* Внутренние отступы */
+    border-radius: 25px; /* Закругленные углы */
+    opacity: 0; /* Скрываем до анимации */
+    transition: opacity 0.5s ease; /* Плавный переход */
+    z-index: 1000; /* Уровень над другими элементами */
+    display: none; /* Скрываем по умолчанию */
+}
+body.dark-mode .notification {
+    background-color: #e0e0e0; /* светлый фон для темной темы */
+    color: rgb(80, 74, 74); /* темный текст для темной темы */
+}
+/* Анимация появления */
+@keyframes slideIn {
+    0% {
+        top: -100px; /* Начальная позиция */
+        opacity: 0; /* Скрыто */
+    }
+    100% {
+        top: 20px; /* Конечная позиция */
+        opacity: 1; /* Видимо */
+    }
+}
+
+@keyframes slideOut {
+    0% {
+        top: 20px; /* Конечная позиция */
+        opacity: 1; /* Видимо */
+    }
+    100% {
+        top: -100px; /* Скрываем вверх */
+        opacity: 0; /* Скрыто */
+    }
+}
+
+/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!   Скрыть кнопку в интерфейсе загадать слово   и настройки    !!!!!!!!!!!!!!!!!*/
+        #setWordButton {
+    display: none; 
+        }
+        #settingsButton {
+    display: none;
+        }
+/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!   Скрыть кнопку в интерфейсе загадать слово и настройки      !!!!!!!!!!!!!!!!!*/
+
     </style>
 </head>
 <body>  
 
     <div id="game">
         <div id="menuButton" class="menu-button">
-            <img src="menu_icon.png" alt="Меню" class="menu-icon" />  <!-- Здесь вставь изображение для кнопки меню -->
+            <img src="menu_icon2.png" alt="Меню" class="menu-icon" />  <!-- Здесь вставь изображение для кнопки меню -->
         </div>
         <div id="timer" class="timer">00:00</div>
         <div id="menuPopup" class="popup">
             <div class="popup-content">
                 <h2>Меню</h2>
                 <div id="difficultySection">
-                    <label for="difficultySelect">Выберите уровень сложности:</label>
-                    <select id="difficultySelectMenu">
-                        <option value="4">4 буквы</option>
-                        <option value="5" selected>5 букв</option> 
-                        <option value="6">6 букв</option>
-                        <option value="7">7 букв</option>
-                        <option value="8">8 букв</option>
-                        <option value="9">9 букв</option>
-                        <option value="10">10 букв</option>
-                        <option value="11">11 букв</option>
-                    </select>
+                    <label class="difficulty-label">КОЛИЧЕСТВО БУКВ В СЛОВЕ</label>
+                    <div id="difficultyButtons">
+                        <button class="difficulty-button" data-value="4">4</button>
+                        <button class="difficulty-button" data-value="5" selected>5</button>
+                        <button class="difficulty-button" data-value="6">6</button>
+                        <button class="difficulty-button" data-value="7">7</button>
+                        <button class="difficulty-button" data-value="8">8</button>
+                        <button class="difficulty-button" data-value="9">9</button>
+                        <button class="difficulty-button" data-value="10">10</button>
+                        <button class="difficulty-button" data-value="11">11</button>
+                    </div>
                 </div>
-                <button id="settingsButton" class="button">Настройки</button>
-                <button id="setWordButton" class="button">Загадать слово</button>
+                <div class="theme-container">
+                    <img src="sun.png" alt="Солнце" class="theme-icon" id="sunIcon">
+                    <input type="checkbox" id="darkModeSwitch" class="theme-toggle">
+                    <img src="moon.png" alt="Луна" class="theme-icon" id="moonIcon">
+                </div>
+                <button id="settingsButton" class="button">Настройки</button>               
                 <button id="statsButton" class="button">Статистика</button>
                 <button id="rulesButton" class="button">Правила игры</button>
                 <button id="closeMenuButton" class="button">Закрыть</button>
+
+                <button id="settingsButton" class="button">Настройки</button>    <!--скрыто  -->
+                <button id="setWordButton" class="button">Загадать слово</button> <!--скрыто  -->
             </div>
         </div>
 
@@ -409,7 +588,7 @@ body.dark-mode .button:hover, body.dark-mode .menu-button:hover {
                 <button id="closeStatsButton">Закрыть</button>
             </div>
         </div>
-
+        <div id="notification" class="notification"></div> <!--всплывающее окно -->
 
         <div id="board"></div>
         <p id="message"></p>
@@ -454,12 +633,10 @@ body.dark-mode .button:hover, body.dark-mode .menu-button:hover {
                 <div class="key delete">⬅️</div> 
             </div>
             <div class="keyboard-row">
-                <div class="key lightbulb" style="background-color: #f0f0f0;" data-hint="true">Подсказка</div> <!-- Кнопка подсказки если менять не забыть поменять  if (letter === 'Подсказка') --> 
+                <div class="key lightbulb" data-hint="true">Подсказка 💡</div> <!-- Кнопка подсказки если менять не забыть поменять  if (letter === 'Подсказка') --> 
                 <div class="key check">ПРОВЕРИТЬ СЛОВО</div> <!-- если менять не забыть поменять  if (letter === 'ПРОВЕРИТЬ СЛОВО') -->
             </div>
         </div>
-    
-
 
         <div id="popup">
             <p id="popupMessage"></p>
@@ -649,13 +826,13 @@ function createBoard() {
 function checkWord() {
     const message = document.getElementById('message');
     if (currentWord.length !== words[0].length) {
-        message.textContent = "Пожалуйста, введите " + words[0].length + "-буквенное слово.";
+        showNotification("Пожалуйста, введите " + words[0].length + "-буквенное слово.");
         return; 
     }
 
     const currentDifficultyWords = validWords[`${words[0].length}`];
     if (!currentDifficultyWords.includes(currentWord)) {
-        message.textContent = "Такого слова нет в базе игры.";
+        showNotification("Такого слова нет в базе игры.");
         return; 
     }
 
@@ -706,23 +883,22 @@ function checkWord() {
     } else if (attempts === 6) {
         showPopup(`Вы исчерпали все попытки! Загаданное слово: ${targetWord}`, document.getElementById('timer').textContent);
         stopTimer(); 
-    } else {
-        message.textContent = `Попробуйте еще раз! Осталось попыток: ${6 - attempts}`;
-    }
+    } 
 
     currentWord = ""; 
 }
 
 
-    document.getElementById('restartButton').addEventListener('click', () => {
-        document.getElementById('popup').style.display = 'none'; 
-        attempts = 0; 
-        currentWord = ""; 
-        resetKeyboard(); 
-        resetTimer(); 
-        createBoard(); 
-        hintIndex = 0; // Сбросить индекс подсказки при начале новой игры
-    });
+document.getElementById('restartButton').addEventListener('click', () => {
+    document.getElementById('popup').style.display = 'none'; 
+    attempts = 0; 
+    currentWord = ""; 
+    resetKeyboard(); 
+    resetTimer(); 
+    createBoard(); 
+    hintIndex = 0; // Сбросить индекс подсказки при начале новой игры
+    correctLetters = []; // Сбросить правильные буквы
+});
 
         function clearCurrentWord() {
             currentWord = ""; 
@@ -783,20 +959,35 @@ closeMenuButton.addEventListener('click', () => {
 });
 
 // Переносим функционал выбора уровня сложности
-const difficultySelectMenu = document.getElementById('difficultySelectMenu');
-difficultySelectMenu.addEventListener('change', () => {
-    stopTimer(); // Остановите текущий таймер
-    const difficulty = difficultySelectMenu.value;
+document.querySelectorAll('.difficulty-button').forEach(button => {
+    if (button.getAttribute('data-value') === "5") {
+        button.classList.add('selected'); // Добавляем класс 'selected' к кнопке 5
+    }
+    button.addEventListener('click', () => {
+        stopTimer(); // Остановите текущий таймер
+        const difficulty = button.getAttribute('data-value'); // Получаем значение уровня из атрибута data-value
 
-    // Устанавливаем слова в зависимости от выбранного уровня сложности из wordsOne
-    words = wordsOne[difficulty];  
+        // Устанавливаем слова в зависимости от выбранного уровня сложности из wordsOne
+        words = wordsOne[difficulty];  
 
-    attempts = 0; 
-    currentWord = ""; 
-    usedWords = []; 
-    createBoard(); 
-    resetKeyboard(); 
-    startTimer(); // Запускаем новый таймер
+        // Удаляем класс 'selected' с других кнопок
+        document.querySelectorAll('.difficulty-button').forEach(btn => btn.classList.remove('selected'));
+        button.classList.add('selected'); // Устанавливаем класс 'selected' для нажатой кнопки
+
+        attempts = 0; 
+        currentWord = ""; 
+        usedWords = []; 
+        hintIndex = 0; // Сбросить индекс подсказки при смене уровня
+        correctLetters = []; // Сбросить правильные буквы
+        createBoard(); 
+        resetKeyboard(); 
+        startTimer(); // Запускаем новый таймер
+
+        // Закрываем меню через 500 миллисекунд (можно настроить время)
+        setTimeout(() => {
+            menuPopup.style.display = 'none'; // Закрываем меню
+        }, 200); // Установите количество миллисекунд для задержки
+    });
 });
 
 const settingsButton = document.getElementById('settingsButton');
@@ -886,6 +1077,29 @@ document.querySelector('.key.lightbulb').addEventListener('click', () => {
     } else {
         console.log("Все буквы уже угаданы или показаны.");
     }
+});
+
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message; // Устанавливаем сообщение
+    notification.style.display = 'block'; // Показываем уведомление
+    notification.style.opacity = 1; // Делаем его видимым
+    notification.style.animation = 'slideIn 0.5s forwards'; // Применяем анимацию появления
+
+    // Убираем уведомление через 3 секунды
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.5s forwards'; // Применяем анимацию исчезновения
+        setTimeout(() => {
+            notification.style.display = 'none'; // Скрываем окончательно
+        }, 500); // Время до полного исчезновения
+    }, 3000); // Уведомление будет отображаться 3 секунды
+}
+
+const rulesButton = document.getElementById('rulesButton'); // Получаем кнопку "Правила игры"
+
+// Добавляем обработчик события для кнопки "Правила игры"
+rulesButton.addEventListener('click', () => {
+    window.location.href = 'instructions.html'; // Перенаправление на страницу с инструкцией
 });
 
 

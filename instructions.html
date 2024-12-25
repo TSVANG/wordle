@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Инструкция по игре Вордл</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+    
+        h1 {
+            color: #007bff;
+        }
+    
+        h2 {
+            margin-top: 20px;
+            color: #555;
+        }
+    
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border: 2px solid #aaa; /* Изменённый цвет рамки на более серый */
+        }
+    
+        p {
+            margin: -2px 0; /* Установите меньшее значение для вертикального отступа */
+        }
+    
+        .cell {
+            display: flex; /* Это по умолчанию в .cell. */
+            justify-content: center;
+            align-items: center;
+            width: 50px; /* Установите ширину */
+            height: 50px; /* Установите высоту */
+            border: 1px solid #000;
+            border-radius: 5px;
+            margin: 2px;
+            font-size: 20px; /* Размер текста */
+        }
+    
+        .correct {
+            background-color: rgb(8, 146, 8); /* Зелёный цвет */
+            color: white; /* Цвет текста */
+        }
+    
+        .present {
+            background-color: rgb(231, 231, 3); /* Желтый цвет */
+            color: white;
+        }
+    
+        .absent {
+            background-color: gray; /* Серый цвет */
+            color: white;
+        }
+    
+        .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+    
+        .button:hover {
+            background-color: #0056b3;
+        }
+    
+        .instructions {
+            text-align: left;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Как играть в Wordle</h1>
+        <p>Вы должны угадать слово за 6 попыток, цвет букв изменится и покажет, насколько вы близки.</p>
+        <p>Чтобы начать игру, просто введите любое слово, например:</p>
+        <div class="cells-container" style="display: flex; justify-content: center; margin: 15px 0;">
+        <div class="cell correct">Р</div>
+        <div class="cell present">А</div>
+        <div class="cell absent">Д</div>
+        <div class="cell absent">И</div>
+        <div class="cell absent">О</div>
+       </div>
+
+       
+        <div style="border: 2px solid #f0f0f0; padding: 10px; border-radius: 12px; margin: 10px; background-color: #f0f0f0;">
+            <!-- Первая строка -->
+            <div style="display: flex; align-items: center;">
+                <div class="cell absent" style="width: 25px; height: 25px; margin: 0 5px;">Д</div>
+                <div class="cell absent" style="width: 25px; height: 25px; margin: 0 5px;">И</div>
+                <div class="cell absent" style="width: 25px; height: 25px; margin: 0 5px;">О</div>
+                <span style="margin-left: 10px;">— Серый цвет: буквы <strong>точно нет</strong> в целом слове.</span>
+            </div>
+        
+            <!-- Вторая строка -->
+            <div style="display: flex; align-items: center; margin-top: 5px;">
+                <div class="cell present" style="width: 25px; height: 25px; margin: 0 5px;">А</div>
+                <span style="margin-left: 10px;">— Желтый цвет: буква <strong>есть в слове</strong>, но <strong>не на своем месте</strong>.</span>
+            </div>
+        
+            <!-- Третья строка -->
+            <div style="display: flex; align-items: center; margin-top: 5px;">
+                <div class="cell correct" style="width: 25px; height: 25px; margin: 0 5px;">Р</div>
+                <span style="margin-left: 10px;">— Зеленый цвет: буква <strong>есть в слове</strong> и <strong>стоит на своем месте</strong>.</span>
+            </div>
+        </div>
+
+        <h4>Введите еще слово, например:</h4>
+        <div class="cells-container" style="display: flex; justify-content: center; margin: -15px 0;">
+        <div class="cell correct">Р</div>
+        <div class="cell correct">Е</div>
+        <div class="cell absent">Ч</div>
+        <div class="cell correct">К</div>
+        <div class="cell absent">А</div>
+       </div>
+
+        <h3>Уже близко!</h3>
+        <div class="cells-container" style="display: flex; justify-content: center; margin: -15px 0;">
+        <div class="cell correct">Р</div>
+        <div class="cell correct">Е</div>
+        <div class="cell correct">П</div>
+        <div class="cell correct">К</div>
+        <div class="cell correct">А</div>
+       </div>
+        
+       <h3>Слово разгадано! 🏆</h3>
+       <a href="#" class="button" id="closeInstructionsButton" style="margin-top: -5px;">Закрыть инструкцию</a>
+
+    <script>
+        // Код для закрытия инструкции и перенаправления обратно в игру
+        document.getElementById('closeInstructionsButton').addEventListener('click', () => {
+            window.location.href = 'index.html'; // Замените на фактический путь к вашей игре
+        });
+    </script>
+</body>
+</html>
