@@ -96,15 +96,10 @@
         }
         #menuButton {
     position: absolute; /* Используем абсолютное позиционирование для возможности перемещения */
-
-    top: 3px; /* Отступ от верхнего края */
-
-    top: 10px; /* Отступ от верхнего края */
-
+    top: -3px; /* Отступ от верхнего края */
     left: 20px; /* Отступ от левого края */
     z-index: 100; /* Убедитесь, что кнопка располагается выше других элементов */
 }
-
 
 
 /* Позиционирование для экранов шире 770px */
@@ -375,8 +370,11 @@ body.dark-mode .key.absent {
     color: white; /* Цвет текста на клавишах при темной теме */
 }
 body.dark-mode .button, body.dark-mode .menu-button {
-    background-color: #121212; /* Цвет кнопок для темной темы */
+    background-color: #555; /* Цвет кнопок для темной темы */
     color: white; /* Цвет текста для темной темы */
+}
+body.dark-mode .menu-button {
+    background-color: #121212;
 }
 
 body.dark-mode .button:hover, body.dark-mode .menu-button:hover {
@@ -410,11 +408,7 @@ body.dark-mode .key.lightbulb {
     margin: 20px center; /* Для центровки и отступов */
     text-align: center; /* Выравнивание текста по центру */
     background-color: #ffffff; /* Фон для часов в светлой теме */
-
     margin-top: 4px; /* Добавленный отступ сверху */
-
-    margin-top: 10px; /* Добавленный отступ сверху */
-
 }
 
 /* Для темной темы */
