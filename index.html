@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wordle на русском</title>
-    <link rel="icon" href="path_to_your_image.ico" type="image/x-icon">
+    <link rel="icon" href="Wordle-32.ico" type="image/x-icon">
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <style>
         body {
@@ -23,13 +23,13 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 20px;
+            margin-top: 0px;
             width: 100%; /* Максимальная ширина */
         }
         .row {
             display: flex;
             justify-content: center; 
-            margin: 5px 0;
+            margin: 3px 0;
             width: 85%; /* Ряд занимает всю ширину */
         }
         .cell {
@@ -96,12 +96,19 @@
         }
         #menuButton {
     position: absolute; /* Используем абсолютное позиционирование для возможности перемещения */
+
+    top: 3px; /* Отступ от верхнего края */
+
     top: 10px; /* Отступ от верхнего края */
+
     left: 20px; /* Отступ от левого края */
     z-index: 100; /* Убедитесь, что кнопка располагается выше других элементов */
 }
 
+
+
 /* Позиционирование для экранов шире 770px */
+
 /* Позиционирование для экранов шире 770px, кнопка остается фиксированной относительно центра */
 @media only screen and (min-width: 770px) {
     #menuButton {
@@ -124,7 +131,7 @@
     bottom: 0; 
     left: 0; 
     z-index: 10; 
-    background-color: white; /* Добавляем белый фон */
+    background-color: rgb(239, 255, 250); /* Добавляем белый фон */
 }
 
                                     /* кнопки выбора уровня  */
@@ -368,7 +375,7 @@ body.dark-mode .key.absent {
     color: white; /* Цвет текста на клавишах при темной теме */
 }
 body.dark-mode .button, body.dark-mode .menu-button {
-    background-color: #555; /* Цвет кнопок для темной темы */
+    background-color: #121212; /* Цвет кнопок для темной темы */
     color: white; /* Цвет текста для темной темы */
 }
 
@@ -403,7 +410,11 @@ body.dark-mode .key.lightbulb {
     margin: 20px center; /* Для центровки и отступов */
     text-align: center; /* Выравнивание текста по центру */
     background-color: #ffffff; /* Фон для часов в светлой теме */
+
+    margin-top: 4px; /* Добавленный отступ сверху */
+
     margin-top: 10px; /* Добавленный отступ сверху */
+
 }
 
 /* Для темной темы */
@@ -994,6 +1005,7 @@ const settingsButton = document.getElementById('settingsButton');
 const settingsPopup = document.getElementById('settingsPopup');
 const closeSettingsButton = document.getElementById('closeSettingsButton');
 const darkModeSwitch = document.getElementById('darkModeSwitch');
+const menuButtonIcon = document.querySelector('.menu-button img');
 
 settingsButton.addEventListener('click', () => {
     settingsPopup.style.display = 'block'; // Показываем настройки
@@ -1006,6 +1018,12 @@ closeSettingsButton.addEventListener('click', () => {
 // Обработка переключателя темной темы
 darkModeSwitch.addEventListener('change', () => {
     document.body.classList.toggle('dark-mode'); // Переключаем класс
+    // Изменяем изображение кнопки в зависимости от темы
+    if (document.body.classList.contains('dark-mode')) {
+        menuButtonIcon.src = 'menu_icon2-body.dark-mode.png'; // Укажите путь к изображению для темной темы
+    } else {
+        menuButtonIcon.src = 'menu_icon2.png'; // Укажите путь к изображению для светлой темы
+    }
 });
 
 const setWordButton = document.getElementById('setWordButton');
