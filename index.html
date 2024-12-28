@@ -921,7 +921,7 @@ function checkWord() {
 
 
 document.getElementById('restartButton').addEventListener('click', () => {
-    // Выполняем действия для перезапуска игры
+    // Сначала выполняем логику кнопки
     document.getElementById('popup').style.display = 'none'; 
     attempts = 0; 
     currentWord = ""; 
@@ -931,8 +931,29 @@ document.getElementById('restartButton').addEventListener('click', () => {
     hintIndex = 0; // Сбросить индекс подсказки при начале новой игры
     correctLetters = []; // Сбросить правильные буквы
 
-    // Теперь, после перезапуска игры, показываем рекламу
-    showBannerAd();
+    // Теперь проверяем готовность рекламы
+    vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'interstitial' })
+        .then((data) => {
+            if (data.result) { // Если реклама готова
+                // Показываем рекламу
+                vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'interstitial' })
+                    .then((adData) => {
+                        if (adData.result) {
+                            console.log('Реклама показана');
+                        } else {
+                            console.log('Ошибка при показе рекламы');
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error); // Ошибка показа рекламы
+                    });
+            } else {
+                console.log('Реклама не готова');
+            }
+        })
+        .catch((error) => {
+            console.log(error); // Ошибка проверки рекламы
+        });
 });
 
         function clearCurrentWord() {
@@ -993,7 +1014,6 @@ closeMenuButton.addEventListener('click', () => {
     menuPopup.style.display = 'none'; // Закрываем меню
 });
 
-// Переносим функционал выбора уровня сложности
 document.querySelectorAll('.difficulty-button').forEach(button => {
     if (button.getAttribute('data-value') === "5") {
         button.classList.add('selected'); // Добавляем класс 'selected' к кнопке 5
@@ -1018,8 +1038,29 @@ document.querySelectorAll('.difficulty-button').forEach(button => {
         resetKeyboard(); 
         startTimer(); // Запускаем новый таймер
 
-        // Теперь показываем рекламу
-        showBannerAd();
+        // Проверяем готовность рекламы к показу
+        vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'interstitial' })
+            .then((data) => {
+                if (data.result) { // Если реклама готова
+                    // Показываем рекламу
+                    vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'interstitial' })
+                        .then((adData) => {
+                            if (adData.result) {
+                                console.log('Реклама показана');
+                            } else {
+                                console.log('Ошибка при показе рекламы');
+                            }
+                        })
+                        .catch((error) => {
+                            console.log(error); // Ошибка показа рекламы
+                        });
+                } else {
+                    console.log('Реклама не готова');
+                }
+            })
+            .catch((error) => {
+                console.log(error); // Ошибка проверки рекламы
+            });
 
         // Закрываем меню
         menuPopup.style.display = 'none'; // Закрываем меню
