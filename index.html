@@ -640,6 +640,8 @@ body.dark-mode .notification {
             <div class="keyboard-row">
                 <div class="key lightbulb" data-hint="true">Подсказка 💡</div> <!-- Кнопка подсказки если менять не забыть поменять  if (letter === 'Подсказка') --> 
                 <div class="key check">ПРОВЕРИТЬ СЛОВО</div> <!-- если менять не забыть поменять  if (letter === 'ПРОВЕРИТЬ СЛОВО') -->
+                    <!-- Контейнер для баннера (помещаем его под клавиатурой) -->
+                <div id="bannerAdContainer" style="position: fixed; bottom: 60px; left: 0; right: 0; text-align: center;">
             </div>
         </div>
 
@@ -652,7 +654,30 @@ body.dark-mode .notification {
 
     <script>
         // Инициализация VK Bridge
-        vkBridge.send("VKWebAppInit", {});
+        vkBridge.send("VKWebAppInit", {})
+    .then(() => {
+        // Отображаем баннерную рекламу сразу после инициализации
+        showBannerAd();
+    })
+    .catch((error) => {
+        console.log('Ошибка инициализации VKBridge:', error);
+    });
+
+// Функция для отображения баннерной рекламы
+function showBannerAd() {
+    vkBridge.send('VKWebAppShowBannerAd', {
+        banner_location: 'bottom' // Позиция баннера: низ страницы
+    })
+    .then((data) => { 
+        if (data.result) {
+            console.log('Баннерная реклама отобразилась');
+        }
+    })
+    .catch((error) => {
+        // Ошибка
+        console.log('Ошибка отображения баннерной рекламы:', error);
+    });
+}
         
         
         let validWords = {}; // Для проверки существующих слов
