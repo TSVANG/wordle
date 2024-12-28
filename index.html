@@ -653,7 +653,7 @@ body.dark-mode .notification {
     </div>
 
     <script>
-        // Инициализация VK Bridge
+        // Инициализация VK Bridge 
         vkBridge.send("VKWebAppInit", {})
     .then(() => {
         // Отображаем баннерную рекламу сразу после инициализации
@@ -663,7 +663,7 @@ body.dark-mode .notification {
         console.log('Ошибка инициализации VKBridge:', error);
     });
 
-// Функция для отображения баннерной рекламы
+//              Функция для отображения баннерной рекламы
 function showBannerAd() {
     vkBridge.send('VKWebAppShowBannerAd', {
         banner_location: 'bottom' // Позиция баннера: низ страницы
@@ -677,8 +677,9 @@ function showBannerAd() {
         // Ошибка
         console.log('Ошибка отображения баннерной рекламы:', error);
     });
-}
+}    //          Функция для отображения баннерной рекламы
         
+
         
         let validWords = {}; // Для проверки существующих слов
         let wordsOne = {};   // Для загаданного слова
@@ -1083,9 +1084,68 @@ closeStatsButton.addEventListener('click', () => {
 
 let hintIndex = 0; // Переменная вне функции для отслеживания позиции подсказки
 
+// Обработчик нажатия кнопки подсказки
 document.querySelector('.key.lightbulb').addEventListener('click', () => {
     console.log(`Подсказка нажата.`);
+
+    // Проверка готовности рекламы
+    vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'reward' })
+        .then((data) => {
+            if (data.result) {
+                // Реклама готова, показываем баннер
+                showRewardAdButton();
+            } else {
+                console.log('Рекламные материалы не найдены.');
+                // Если рекламы нет, сразу показываем подсказку
+                showHint();
+            }
+        })
+        .catch((error) => {
+            console.log(error); // Ошибка
+            // Некоторые ошибки могут возникать, например, если нет подключения к интернету
+            showHint(); // В случае ошибки сразу предоставляем подсказку
+        });
+});
+
+// Функция для показа кнопки "Посмотрите рекламу"
+function showRewardAdButton() {
+    // Убедитесь, что кнопка не добавляется несколько раз
+    const existingButton = document.getElementById('rewardAdButton');
+    if (existingButton) return; // Если кнопка уже существует, ничего не делаем
+
+    const button = document.createElement('button');
+    button.id = 'rewardAdButton'; // Добавляем ID для будущего доступа
+    button.textContent = 'Посмотрите рекламу для подсказки';
+    button.classList.add('button');
+    button.onclick = function() {
+        // Показываем рекламу
+        showRewardAd();
+    };
     
+    // Добавление кнопки под клавиатурой или в нужное место
+    document.getElementById('bannerAdContainer').append(button); // Добавьте туда, где хотите
+}
+
+// Функция для показа рекламы
+function showRewardAd() {
+    // Показать рекламу
+    vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'reward' })
+        .then((data) => {
+            if (data.result) {
+                console.log('Реклама показана');
+                // После успешного просмотра рекламы показываем подсказку
+                showHint(); // Предоставляем подсказку пользователю
+            } else {
+                console.log('Ошибка при показе');
+            }
+        })
+        .catch((error) => {
+            console.log(error); // Ошибка
+        });
+}
+
+// Функция для показа подсказки
+function showHint() {
     // Ищем первую букву, которая не была угадана
     while (hintIndex < targetWord.length && correctLetters[hintIndex]) {
         hintIndex++; // Находим следующую букву, которая не была отгадана
@@ -1114,7 +1174,7 @@ document.querySelector('.key.lightbulb').addEventListener('click', () => {
     } else {
         console.log("Все буквы уже угаданы или показаны.");
     }
-});
+}
 
 function showNotification(message) {
     const notification = document.getElementById('notification');
