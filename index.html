@@ -1092,8 +1092,8 @@ document.querySelector('.key.lightbulb').addEventListener('click', () => {
     vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'reward' })
         .then((data) => {
             if (data.result) {
-                // Реклама готова, показываем баннер
-                showRewardAdButton();
+                // Если реклама готова, показываем ее
+                showRewardAd();
             } else {
                 console.log('Рекламные материалы не найдены.');
                 // Если рекламы нет, сразу показываем подсказку
@@ -1102,29 +1102,10 @@ document.querySelector('.key.lightbulb').addEventListener('click', () => {
         })
         .catch((error) => {
             console.log(error); // Ошибка
-            // Некоторые ошибки могут возникать, например, если нет подключения к интернету
-            showHint(); // В случае ошибки сразу предоставляем подсказку
+            // В случае ошибки показываем подсказку
+            showHint();
         });
 });
-
-// Функция для показа кнопки "Посмотрите рекламу"
-function showRewardAdButton() {
-    // Убедитесь, что кнопка не добавляется несколько раз
-    const existingButton = document.getElementById('rewardAdButton');
-    if (existingButton) return; // Если кнопка уже существует, ничего не делаем
-
-    const button = document.createElement('button');
-    button.id = 'rewardAdButton'; // Добавляем ID для будущего доступа
-    button.textContent = 'Посмотрите рекламу для подсказки';
-    button.classList.add('button');
-    button.onclick = function() {
-        // Показываем рекламу
-        showRewardAd();
-    };
-    
-    // Добавление кнопки под клавиатурой или в нужное место
-    document.getElementById('bannerAdContainer').append(button); // Добавьте туда, где хотите
-}
 
 // Функция для показа рекламы
 function showRewardAd() {
@@ -1137,10 +1118,14 @@ function showRewardAd() {
                 showHint(); // Предоставляем подсказку пользователю
             } else {
                 console.log('Ошибка при показе');
+                // В случае ошибки сразу показываем подсказку
+                showHint();
             }
         })
         .catch((error) => {
             console.log(error); // Ошибка
+            // В случае ошибки сразу показываем подсказку
+            showHint();
         });
 }
 
