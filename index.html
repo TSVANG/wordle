@@ -921,6 +921,7 @@ function checkWord() {
 
 
 document.getElementById('restartButton').addEventListener('click', () => {
+    // Выполняем действия для перезапуска игры
     document.getElementById('popup').style.display = 'none'; 
     attempts = 0; 
     currentWord = ""; 
@@ -929,6 +930,9 @@ document.getElementById('restartButton').addEventListener('click', () => {
     createBoard(); 
     hintIndex = 0; // Сбросить индекс подсказки при начале новой игры
     correctLetters = []; // Сбросить правильные буквы
+
+    // Теперь, после перезапуска игры, показываем рекламу
+    showBannerAd();
 });
 
         function clearCurrentWord() {
@@ -1014,10 +1018,11 @@ document.querySelectorAll('.difficulty-button').forEach(button => {
         resetKeyboard(); 
         startTimer(); // Запускаем новый таймер
 
-        // Закрываем меню через 500 миллисекунд (можно настроить время)
-        setTimeout(() => {
-            menuPopup.style.display = 'none'; // Закрываем меню
-        }, 200); // Установите количество миллисекунд для задержки
+        // Теперь показываем рекламу
+        showBannerAd();
+
+        // Закрываем меню
+        menuPopup.style.display = 'none'; // Закрываем меню
     });
 });
 
