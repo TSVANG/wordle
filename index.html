@@ -921,38 +921,38 @@ function checkWord() {
 
 
 document.getElementById('restartButton').addEventListener('click', () => {
-    // Сначала выполняем логику кнопки
+    // Логика кнопки
     document.getElementById('popup').style.display = 'none'; 
     attempts = 0; 
     currentWord = ""; 
     resetKeyboard(); 
     resetTimer(); 
     createBoard(); 
-    hintIndex = 0; // Сбросить индекс подсказки при начале новой игры
-    correctLetters = []; // Сбросить правильные буквы
+    hintIndex = 0; 
+    correctLetters = []; 
 
-    // Теперь проверяем готовность рекламы
+    // Проверяем готовность рекламы
     vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'interstitial' })
         .then((data) => {
-            if (data.result) { // Если реклама готова
+            if (data.result) { // Проверяем наличие рекламы
                 // Показываем рекламу
                 vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'interstitial' })
                     .then((adData) => {
                         if (adData.result) {
                             console.log('Реклама показана');
                         } else {
-                            console.log('Ошибка при показе рекламы');
+                            console.log('Ошибка при показе рекламы', adData.error);
                         }
                     })
                     .catch((error) => {
-                        console.log(error); // Ошибка показа рекламы
+                        console.log('Ошибка при показе рекламы:', error);
                     });
             } else {
                 console.log('Реклама не готова');
             }
         })
         .catch((error) => {
-            console.log(error); // Ошибка проверки рекламы
+            console.log('Ошибка проверки рекламы:', error);
         });
 });
 
