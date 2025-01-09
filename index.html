@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -96,10 +97,13 @@
         }
         #menuButton {
     position: absolute; /* Используем абсолютное позиционирование для возможности перемещения */
-    top: 3px; /* Отступ от верхнего края */
+    top: -3px; /* Отступ от верхнего края */
     left: 20px; /* Отступ от левого края */
     z-index: 100; /* Убедитесь, что кнопка располагается выше других элементов */
 }
+
+
+/* Позиционирование для экранов шире 770px */
 
 /* Позиционирование для экранов шире 770px, кнопка остается фиксированной относительно центра */
 @media only screen and (min-width: 770px) {
@@ -367,8 +371,11 @@ body.dark-mode .key.absent {
     color: white; /* Цвет текста на клавишах при темной теме */
 }
 body.dark-mode .button, body.dark-mode .menu-button {
-    background-color: #121212; /* Цвет кнопок для темной темы */
+    background-color: #555; /* Цвет кнопок для темной темы */
     color: white; /* Цвет текста для темной темы */
+}
+body.dark-mode .menu-button {
+    background-color: #121212;
 }
 
 body.dark-mode .button:hover, body.dark-mode .menu-button:hover {
@@ -634,6 +641,8 @@ body.dark-mode .notification {
             <div class="keyboard-row">
                 <div class="key lightbulb" data-hint="true">Подсказка 💡</div> <!-- Кнопка подсказки если менять не забыть поменять  if (letter === 'Подсказка') --> 
                 <div class="key check">ПРОВЕРИТЬ СЛОВО</div> <!-- если менять не забыть поменять  if (letter === 'ПРОВЕРИТЬ СЛОВО') -->
+                    <!-- Контейнер для баннера (помещаем его под клавиатурой) -->
+                <div id="bannerAdContainer" style="position: fixed; bottom: 60px; left: 0; right: 0; text-align: center;">
             </div>
         </div>
 
@@ -645,9 +654,33 @@ body.dark-mode .notification {
     </div>
 
     <script>
-        // Инициализация VK Bridge
-        vkBridge.send("VKWebAppInit", {});
+        // Инициализация VK Bridge 
+        vkBridge.send("VKWebAppInit", {})
+    .then(() => {
+        // Отображаем баннерную рекламу сразу после инициализации
+        showBannerAd();
+    })
+    .catch((error) => {
+        console.log('Ошибка инициализации VKBridge:', error);
+    });
+
+//              Функция для отображения баннерной рекламы
+function showBannerAd() {
+    vkBridge.send('VKWebAppShowBannerAd', {
+        banner_location: 'bottom' // Позиция баннера: низ страницы
+    })
+    .then((data) => { 
+        if (data.result) {
+            console.log('Баннерная реклама отобразилась');
+        }
+    })
+    .catch((error) => {
+        // Ошибка
+        console.log('Ошибка отображения баннерной рекламы:', error);
+    });
+}    //          Функция для отображения баннерной рекламы
         
+
         
         let validWords = {}; // Для проверки существующих слов
         let wordsOne = {};   // Для загаданного слова
@@ -886,17 +919,42 @@ function checkWord() {
 
     currentWord = ""; 
 }
-
+// кнопка начать заново 
 
 document.getElementById('restartButton').addEventListener('click', () => {
+    // Логика кнопки
     document.getElementById('popup').style.display = 'none'; 
     attempts = 0; 
     currentWord = ""; 
     resetKeyboard(); 
     resetTimer(); 
     createBoard(); 
-    hintIndex = 0; // Сбросить индекс подсказки при начале новой игры
-    correctLetters = []; // Сбросить правильные буквы
+    hintIndex = 0; 
+    correctLetters = []; 
+
+    // Проверяем готовность рекламы
+    vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'interstitial' })
+        .then((data) => {
+            if (data.result) { // Проверяем наличие рекламы
+                // Показываем рекламу
+                vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'interstitial' })
+                    .then((adData) => {
+                        if (adData.result) {
+                            console.log('Реклама показана');
+                        } else {
+                            console.log('Ошибка при показе рекламы', adData.error);
+                        }
+                    })
+                    .catch((error) => {
+                        console.log('Ошибка при показе рекламы:', error);
+                    });
+            } else {
+                console.log('Реклама не готова');
+            }
+        })
+        .catch((error) => {
+            console.log('Ошибка проверки рекламы:', error);
+        });
 });
 
         function clearCurrentWord() {
@@ -957,7 +1015,6 @@ closeMenuButton.addEventListener('click', () => {
     menuPopup.style.display = 'none'; // Закрываем меню
 });
 
-// Переносим функционал выбора уровня сложности
 document.querySelectorAll('.difficulty-button').forEach(button => {
     if (button.getAttribute('data-value') === "5") {
         button.classList.add('selected'); // Добавляем класс 'selected' к кнопке 5
@@ -982,10 +1039,32 @@ document.querySelectorAll('.difficulty-button').forEach(button => {
         resetKeyboard(); 
         startTimer(); // Запускаем новый таймер
 
-        // Закрываем меню через 500 миллисекунд (можно настроить время)
-        setTimeout(() => {
-            menuPopup.style.display = 'none'; // Закрываем меню
-        }, 200); // Установите количество миллисекунд для задержки
+        // Проверяем готовность рекламы к показу
+        vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'interstitial' })
+            .then((data) => {
+                if (data.result) { // Если реклама готова
+                    // Показываем рекламу
+                    vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'interstitial' })
+                        .then((adData) => {
+                            if (adData.result) {
+                                console.log('Реклама показана');
+                            } else {
+                                console.log('Ошибка при показе рекламы');
+                            }
+                        })
+                        .catch((error) => {
+                            console.log(error); // Ошибка показа рекламы
+                        });
+                } else {
+                    console.log('Реклама не готова');
+                }
+            })
+            .catch((error) => {
+                console.log(error); // Ошибка проверки рекламы
+            });
+
+        // Закрываем меню
+        menuPopup.style.display = 'none'; // Закрываем меню
     });
 });
 
@@ -1052,9 +1131,53 @@ closeStatsButton.addEventListener('click', () => {
 
 let hintIndex = 0; // Переменная вне функции для отслеживания позиции подсказки
 
+// Обработчик нажатия кнопки подсказки
 document.querySelector('.key.lightbulb').addEventListener('click', () => {
     console.log(`Подсказка нажата.`);
-    
+
+    // Проверка готовности рекламы
+    vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'reward' })
+        .then((data) => {
+            if (data.result) {
+                // Если реклама готова, показываем ее
+                showRewardAd();
+            } else {
+                console.log('Рекламные материалы не найдены.');
+                // Если рекламы нет, сразу показываем подсказку
+                showHint();
+            }
+        })
+        .catch((error) => {
+            console.log(error); // Ошибка
+            // В случае ошибки показываем подсказку
+            showHint();
+        });
+});
+
+// Функция для показа рекламы
+function showRewardAd() {
+    // Показать рекламу
+    vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'reward' })
+        .then((data) => {
+            if (data.result) {
+                console.log('Реклама показана');
+                // После успешного просмотра рекламы показываем подсказку
+                showHint(); // Предоставляем подсказку пользователю
+            } else {
+                console.log('Ошибка при показе');
+                // В случае ошибки сразу показываем подсказку
+                showHint();
+            }
+        })
+        .catch((error) => {
+            console.log(error); // Ошибка
+            // В случае ошибки сразу показываем подсказку
+            showHint();
+        });
+}
+
+// Функция для показа подсказки
+function showHint() {
     // Ищем первую букву, которая не была угадана
     while (hintIndex < targetWord.length && correctLetters[hintIndex]) {
         hintIndex++; // Находим следующую букву, которая не была отгадана
@@ -1083,7 +1206,7 @@ document.querySelector('.key.lightbulb').addEventListener('click', () => {
     } else {
         console.log("Все буквы уже угаданы или показаны.");
     }
-});
+}
 
 function showNotification(message) {
     const notification = document.getElementById('notification');
