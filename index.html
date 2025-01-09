@@ -1007,6 +1007,9 @@ function getNewWord() {
 const menuPopup = document.getElementById('menuPopup');
 const closeMenuButton = document.getElementById('closeMenuButton');
 
+// Открываем меню сразу после инициализации игры
+menuPopup.style.display = 'block'; // Это откроет меню при загрузке страницы
+
 menuButton.addEventListener('click', () => {
     menuPopup.style.display = 'block'; // Показываем меню
 });
