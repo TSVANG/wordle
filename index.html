@@ -1,1000 +1,692 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Wordle на русском</title>
     <link rel="icon" href="Wordle-32.ico" type="image/x-icon">
     <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <style>
-        body {
+        /* ================================================================= */
+        /* ОСНОВНЫЕ И АДАПТИВНЫЕ СТИЛИ                      */
+        /* ================================================================= */
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* Предотвратить прокрутку */
             font-family: Arial, sans-serif;
             text-align: center;
-            margin: 0;
-            padding: 0;
+            background-color: rgb(239, 255, 250);
+            color: black;
+        }
+
+        /* Запрет на выделение текста и вызов контекстного меню */
+        body, #game {
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none; /* Стандартный синтаксис */
+            -webkit-touch-callout: none; /* Отключить вызов контекстного меню при долгом тапе на iOS */
+        }
+
+        #game {
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Занимает 100% высоты экрана */
             width: 100%;
-            overflow-x: hidden;
-            background-color: rgb(239, 255, 250); /* Устанавливаем фон для игры */
-            color: black; /* Цвет текста по умолчанию */
-           
+            justify-content: space-between; /* Распределяет пространство между элементами */
+            align-items: center;
+            box-sizing: border-box; /* Чтобы padding не увеличивал высоту */
         }
 
         #board {
             display: flex;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
-            margin-top: 0px;
-            width: 100%; /* Максимальная ширина */
+            width: 100%;
+            max-width: 400px; /* Ограничение для больших экранов */
+            flex-grow: 1; /* Поле будет занимать все доступное пространство */
+            padding: 10px 0;
         }
+
         .row {
             display: flex;
-            justify-content: center; 
-            margin: 3px 0;
-            width: 85%; /* Ряд занимает всю ширину */
+            justify-content: center;
+            margin: 2px 0;
+            width: 100%;
         }
+
         .cell {
-            flex: 1; /* Ячейки занимают равное пространство */
-            height: 50px; /* Высота ячейки */
+            flex: 1;
+            max-width: 60px; /* Максимальная ширина ячейки */
+            aspect-ratio: 1 / 1; /* Сохраняем ячейки квадратными */
             border: 1px solid #000;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 25px; /* Размер шрифта */
+            font-size: clamp(16px, 5vw, 25px); /* Адаптивный размер шрифта */
             border-radius: 5px;
+            margin: 0 2px;
+            background-color: #f0f0f0;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
             transition: background-color 0.2s, transform 0.1s;
-            margin: 0 2px; /* Отступы между ячейками */
-            background-color: #f0f0f0; /* Устанавливаем более яркий цвет для ячеек */
         }
+
+        .keyboard {
+            width: 100%;
+            max-width: 500px; /* Макс. ширина для десктопов */
+            position: fixed; /* Фиксируем внизу */
+            bottom: 0; /* Изначально прижата к низу */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background-color: rgb(239, 255, 250);
+            padding: 5px;
+            padding-bottom: env(safe-area-inset-bottom); /* Отступ для iPhone с "челкой" */
+            transition: bottom 0.3s ease; /* Плавный сдвиг при появлении баннера */
+        }
+
         .button, .menu-button {
-            padding: 10px 20px; /* Внутренние отступы для кнопок */
-            font-size: 16px; /* Размер шрифта */
-            font-weight: bold; /* Жирный шрифт */
-            color: white; /* Цвет текста */
-            background-color: #007bff; /* Основной цвет фона */
-            border: none; /* Убираем рамку */
-            border-radius: 25px; /* Закругление углов */
-            cursor: pointer; /* Курсор указателя при наведении */
-            transition: background-color 0.3s, transform 0.1s; /* Плавный переход цвета и анимация */
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Тень для кнопок */
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
-
-
 
         .button:active, .menu-button:active {
-            transform: scale(0.95); /* Сжатие кнопки при нажатии */
+            transform: scale(0.95);
         }
         
         :root {
-            --color: rgb(255, 255, 255); /* Цвет для правильной буквы */
-            --color-correct:   rgb(8, 146, 8); /* цвет клавишь */
-            --color-present:   rgb(231, 231, 3); /* цвет клавишь */
-            --color-absent:    gray; /* цвет клавишь */
-         }
+            --color: rgb(255, 255, 255);
+            --color-correct:   rgb(8, 146, 8);
+            --color-present:   rgb(231, 231, 3);
+            --color-absent:    gray;
+        }
         .correct {
             background-color: var(--color-correct);
             color: var(--color);
         }
-
         .present {
-            background-color: var( --color-present);
+            background-color: var(--color-present);
             color: var(--color);
         }
-
         .absent {
-            background-color: var( --color-absent);
+            background-color: var(--color-absent);
             color: var(--color);
         }
 
-        #game {
-            position: relative;
-            display: block;
-            width: 100%;
-            margin: 0 auto;
-          /*  background-color: rgb(239, 255, 250); /* Устанавливаем красный фон для игры */
-          /*  min-height: 100vh; /* Устанавливаем минимальную высоту, чтобы занять весь экран */
-        }
         #menuButton {
-    position: absolute; /* Используем абсолютное позиционирование для возможности перемещения */
-    top: -3px; /* Отступ от верхнего края */
-    left: 20px; /* Отступ от левого края */
-    z-index: 100; /* Убедитесь, что кнопка располагается выше других элементов */
-}
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            z-index: 100;
+        }
 
-
-/* Позиционирование для экранов шире 770px */
-
-/* Позиционирование для экранов шире 770px, кнопка остается фиксированной относительно центра */
-@media only screen and (min-width: 770px) {
-    #menuButton {
-        top: 0px; /* Поддерживаем отступ сверху */
-        left: 50%; /* Позиционируем по центру */
-        transform: translateX(-180px); /* Смещаем на 220px влево от центра */
-    }
-}
-
-
-
-
-        .keyboard {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch; /* Растягивает строки клавиш по ширине */
-    margin-top: 20px; 
-    width: 100%; /* Установлено на 100%, чтобы занимать всю ширину */
-    position: fixed; 
-    bottom: 0; 
-    left: 0; 
-    z-index: 10; 
-    background-color: rgb(239, 255, 250); /* Добавляем белый фон */
-}
-
-                                    /* кнопки выбора уровня  */
-
-.difficulty-label {
-    font-weight: bold; /* Делаем текст жирным */
-    font-size: 18px; /* Размер шрифта надписи */
-    margin-bottom: 10px; /* Отступ снизу, чтобы отделить от кнопок */
-}                                   
-#difficultyButtons {
-    display: flex;
-    justify-content: center; /* Центрируем кнопки */
-    margin-top: 10px; /* Отступ сверху */
-}
-
-
-
-/* Стили для кнопок с возможностью изменения отступа между кнопками */
-@media only screen and (min-width: 10px) {
-    #difficultyButtons {
-        max-width: 400px; /* Максимальная ширина для контейнера с кнопками */
-        margin: 0 auto; /* Центрируем контейнер на странице */
-    }
-.difficulty-button {
-    padding: 8px 14px; /* Внутренние отступы для кнопок */
-    font-size: 24px; /* Размер шрифта */
-    font-weight: bold; /* Жирный шрифт */
-    color: white; /* Цвет текста */
-    background-color: #aba8c771; /* Основной цвет фона */
-    border: none; /* Убираем рамку */
-    border-radius: 5px; /* Закругление углов */
-    cursor: pointer; /* Курсор указателя при наведении */
-    margin: 0 10px; /* Отступы между кнопками (можно менять значение 10px) */
-    transition: background-color 0.3s, transform 0.1s; /* Плавный переход цвета и анимация */
-    }
-}
-
-.difficulty-button:hover {
-    background-color:  #aba8c771; /* Цвет фона при наведении */
-    transform: translateY(-2px); /* Легкое поднятие кнопки при наведении */
-}
-
-.difficulty-button:active {
-    transform: scale(0.95); /* Сжатие кнопки при нажатии */
-}
-
-.difficulty-button.selected {
-    background-color: rgb(8, 146, 8); /* Цвет для выбранной кнопки */
-}
-
-                                    /* кнопки выбора уровня  */
-
-
-
-/* Медиа-запрос для экранов шире 770px (ноутбуки и десктопы) */
-@media only screen and (min-width: 770px) {
-    .keyboard {
-        width: 400px; /* Установите желаемую ширину для ноутбуков */
-        margin: 0 auto; /* Центрируем клавиатуру */
-        left: 50%; /* Сдвигаем в центр */
-        transform: translateX(-50%); /* Корректируем центрирование */
-    }
-}
-
-@media only screen and (min-width: 770px) {
-    #board {
-        width: 400px; /* Устанавливаем максимальную ширину для игрового поля */
-        margin: 0 auto; /* Центрируем игровое поле */
-    }
-}
         .keyboard-row {
             display: flex;
-            justify-content: space-between; /* Равномерное распределение клавиш */
-            width: 100%; /* Это гарантирует, что строка займет всю ширину клавиатуры */
-        }
-
-        :root {
-            --key-width: 25px; 
-            --key-height: 40px; 
-            --key-border-radius: 7px; 
-            --key-background-color: #f0f0f0; 
-            --key-active-background-color: #194fe4;
-            --key-hover-background-color: #e0e0e0; 
+            justify-content: space-between;
+            width: 100%;
         }
 
         .key {
-    flex: 1; /* Каждая клавиша будет равномерно заполнять строку */
-    height: 40px; 
-    margin: 2px; 
-    border: 1px solid #000; 
-    border-radius: 7px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    background-color: #f0f0f0; 
-    cursor: pointer; 
-    transition: background-color 0.2s, transform 0.1s;
-}
-
+            flex: 1;
+            height: 40px; 
+            margin: 2px; 
+            border: 1px solid #000; 
+            border-radius: 7px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background-color: #f0f0f0; 
+            cursor: pointer; 
+            transition: background-color 0.2s, transform 0.1s;
+        }
         .key:hover {
             background-color: #e0e0e0;
         }
-
         .key.correct {
             background-color: var(--color-correct); 
-            color: var(--color);  /*цвет букв на клавиатуре выненесена в перерменную*/
+            color: var(--color);
         }
-
         .key.present {
-            background-color: var( --color-present);
-            color: var(--color); /*цвет букв на клавиатуре выненесена в перерменную*/
+            background-color: var(--color-present);
+            color: var(--color);
         }
-
         .key.absent {
-            background-color: var( --color-absent);
-            color: var(--color); /*цвет букв на клавиатуре выненесена в перерменную*/
+            background-color: var(--color-absent);
+            color: var(--color);
         }
-
         .key:active {
             transform: scale(0.95);
             background-color: #a2a4a8; 
         }
+
         .menu-button {
-            display: inline-block; /* Чтобы кнопка находилась рядом с таймером */
+            display: inline-block;
             cursor: pointer;
-            margin-right: 10px; /* Отступ справа от кнопки */
-            background: transparent; /* Убираем фон */
-            box-shadow: none; /* Убираем тень */
+            margin-right: 10px;
+            background: transparent;
+            box-shadow: none;
         }
-
-        /* Стили для кнопки меню при наведении */
         .menu-button:hover {
-            opacity: 0.8; /* Изменяем прозрачность при наведении */
-            background: transparent; /* Поддерживаем прозрачный фон при наведении  */
+            opacity: 0.8;
+            background: transparent;
         }
-
         .menu-icon {
-            width: 30px; /* Установите желаемую ширину */
-            height: auto; /* Сохраняет пропорции изображения */
-            
-            
+            width: 30px;
+            height: auto;
         }
-
-        /* ТЕМАНЯ ТЕМА */
-
-        .theme-container {
-    display: flex; /* Используем flexbox для выравнивания элементов */
-    align-items: center; /* Выравниваем по центру вертикально */
-    justify-content: center; /* Центрируем элементы по горизонтали */
-}
-
-.theme-icon {
-    width: 30px; /* Ширина иконок */
-    height: 30px; /* Высота иконок */
-    margin: 0 5px; /* Отступы между иконками и ползунком */
-}
-
-/* Стили для ползунка */
-.theme-toggle {
-    -webkit-appearance: none; /* Убираем стандартный стиль для WebKit-браузеров */
-    appearance: none; /* Убирает стандартный стиль для других браузеров */
-    width: 60px; /* Ширина ползунка */
-    height: 30px; /* Высота ползунка */
-    border-radius: 50px; /* Закругление углов */
-    background: #ccc; /* Фон ползунка */
-    position: relative; /* Для позиционирования индикатора */
-    outline: none; /* Убираем обводку */
-    cursor: pointer; /* Изменение курсора на указатель */
-    transition: background 0.3s; /* Плавный переход фона */
-}
-
-.theme-toggle::before {
-    content: ""; /* Содержимое для ползунка */
-    position: absolute; /* Абсолютное позиционирование относительно ползунка */
-    top: 4px; /* Расположение сверху */
-    left: 4px; /* Расположение слева */
-    width: 22px; /* Ширина индикатора */
-    height: 22px; /* Высота индикатора */
-    border-radius: 50%; /* Закругление углов индикатора */
-    background: yellow; /* Цвет индикатора в светлой теме (цвет солнца) */
-    transition: transform 0.3s; /* Плавный переход позиции индикатора */
-}
-
-.theme-toggle:checked {
-    background: #4caf50; /* Цвет фона для включенного состояния */
-}
-
-.theme-toggle:checked::before {
-    transform: translateX(30px); /* Перемещение индикатора при включении */
-    background: lightgray; /* Цвет индикатора в темной теме (цвет луны) */
-}
-
-
-body.dark-mode {
-    background-color: #121212; /* Цвет фона для темной темы */
-    color: white; /* Цвет текста для темной темы */
-}
-
-body.dark-mode .key {
-    background-color: #333; /* Цвет кнопок при темной теме */
-    color: white; /* Цвет текста кнопок при темной теме */
-}
-
-body.dark-mode .keyboard {
-    background-color: #222; /* Цвет клавиатуры при темной теме */
-}
-
-body.dark-mode .cell.correct {
-    background-color: #0bff0b; /* Цвет для правильной буквы */
-}
-
-body.dark-mode .cell.present {
-    background-color: #f1ff0b; /* Цвет для присутствующей буквы */
-}
-
-body.dark-mode .cell.absent {
-    background-color: #666; /* Цвет для отсутствующей буквы */
-}
-
-body.dark-mode .button {
-    background-color: #444; /* Цвет кнопок при темной теме */
-    color: white; /* Цвет текста кнопок при темной теме */
-}
-
-body.dark-mode .popup {
-    background-color: #121212; /* Цвет фона попапа при темной теме */
-    color: white; /* Цвет текста в попапе при темной теме */
-}
-body.dark-mode .key.correct {
-    background-color: rgb(8, 146, 8); /* Цвет для правильной буквы при темной теме */
-    color: white; /* Цвет текста на клавишах при темной теме */
-}
-
-body.dark-mode .key.present {
-    background-color: rgb(231, 231, 3); /* Цвет для присутствующей буквы при темной теме */
-    color: black; /* Цвет текста на клавишах при темной теме */
-}
-
-body.dark-mode .key.absent {
-    background-color: gray; /* Цвет для отсутствующей буквы при темной теме */
-    color: white; /* Цвет текста на клавишах при темной теме */
-}
-body.dark-mode .button, body.dark-mode .menu-button {
-    background-color: #555; /* Цвет кнопок для темной темы */
-    color: white; /* Цвет текста для темной темы */
-}
-body.dark-mode .menu-button {
-    background-color: #121212;
-}
-
-body.dark-mode .button:hover, body.dark-mode .menu-button:hover {
-    background-color: #444; /* Цвет фона при наведении для темной темы */
-}
-/* Ячейки для темной темы */
-body.dark-mode .cell {
-    background-color: #444; /* Цвет фона для ячеек в темной теме */
-    color: white; /* Цвет текста для ячеек в темной теме */
-}
-
-/* Обычно кнопка подсказки */
-.key.lightbulb {
-    background-color: #f0f0f0; /* Цвет фона в обычном режиме */
-    color: black; /* Цвет текста в обычном режиме */
-}
-
-/* Кнопка подсказки в темной теме */
-body.dark-mode .key.lightbulb {
-    background-color: #333; /* Цвет фона для кнопки подсказки в темной теме */
-    color: white; /* Цвет текста для кнопки подсказки в темной теме */
-}
-.timer {
-    
-    font-size: 19px; /* Размер шрифта для времени */
-    padding: 10px; /* Внутренние отступы */
-    border: 2px solid #000; /* Цвет рамки */
-    border-radius: 10px; /* Закругление углов */
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Тень */
-    display: inline-block; /* Чтобы рамка обтекала содержимое */
-    margin: 20px center; /* Для центровки и отступов */
-    text-align: center; /* Выравнивание текста по центру */
-    background-color: #ffffff; /* Фон для часов в светлой теме */
-    margin-top: 4px; /* Добавленный отступ сверху */
-}
-
-/* Для темной темы */
-body.dark-mode .timer {
-    background-color: #555555; /* Фон для часов в темной теме */
-    color: white; /* Цвет текста для часов в темной теме */
-}
-         .popup {
-            display: none; /* Скрыто по умолчанию */
+        
+        /* Стили для попапов и оверлеев */
+        .popup {
+            display: none;
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%; /* Используйте 100% ширины экрана */
-            height: 100%; /* Используйте 100% высоты экрана */
-            background-color: rgb(255, 255, 255); /* Цвет фона меню */
-            border: 2px solid #000; /* Цвет рамки */
-            border-radius: 10px; /* Закругление углов */
-            padding: 40px; /* Внутренние отступы */
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* Тень */
-            z-index: 1000; /* Помещаем выше других элементов */
-            padding: 50% 0% 20px 0%; /* Выравнивание кнопок меню по центру экрана */ /* пример 10px сверху, 15px справа, 20px снизу, 5px слева */
-            
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
         }
-
         .popup-content {
-            text-align: center; /* Центрировать текст */
+            background-color: rgb(255, 255, 255);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
         }
-
         .popup button {
-            display: block; /* Каждая кнопка будет на новой строке */
-            margin: 10px auto; /* Центровать кнопки */
+            display: block;
+            margin: 10px auto;
         }
-        #popup {
+        #popup { /* Попап окончания игры */
             display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgb(80, 74, 74); /* Светлый фон для нормальной темы */
-    color: #e0e0e0; /* Темный текст */
+            background-color: rgb(240, 240, 240);
+            color: #333;
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-        }
-        body.dark-mode #popup {
-            background-color: #e0e0e0; /* светлый фон для темной темы */
-            color: rgb(80, 74, 74); /* темный текст для темной темы */
-}
-
-        .cell.correct,
-        .cell.present,
-        .cell.absent {
-            animation: pulse 0.5s; 
+            z-index: 1001;
         }
 
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.1);
-            }
-            100% {
-                transform: scale(1);
-            }
+        /* Другие стили (сложность, тема и т.д.) */
+        #difficultyButtons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap; /* Позволяет кнопкам переноситься */
+            margin-top: 10px;
+        }
+        .difficulty-button {
+            padding: 8px 14px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #aba8c771;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        .difficulty-button.selected {
+            background-color: rgb(8, 146, 8);
+        }
+        .difficulty-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .notification {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgb(80, 74, 74);
+            color: #e0e0e0;
+            padding: 15px 20px;
+            border-radius: 25px;
+            opacity: 0;
+            transition: top 0.5s ease, opacity 0.5s ease;
+            z-index: 2000;
+            display: block;
+        }
+        .notification.show {
+            top: 20px;
+            opacity: 1;
         }
 
- .notification {
-    position: fixed;
-    top: -100px; /* Скрываем уведомление выше экрана по умолчанию */
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgb(80, 74, 74); /* Светлый фон для нормальной темы */
-    color: #e0e0e0; /* Темный текст */
-    padding: 15px 20px; /* Внутренние отступы */
-    border-radius: 25px; /* Закругленные углы */
-    opacity: 0; /* Скрываем до анимации */
-    transition: opacity 0.5s ease; /* Плавный переход */
-    z-index: 1000; /* Уровень над другими элементами */
-    display: none; /* Скрываем по умолчанию */
-}
-body.dark-mode .notification {
-    background-color: #e0e0e0; /* светлый фон для темной темы */
-    color: rgb(80, 74, 74); /* темный текст для темной темы */
-}
-/* Анимация появления */
-@keyframes slideIn {
-    0% {
-        top: -100px; /* Начальная позиция */
-        opacity: 0; /* Скрыто */
-    }
-    100% {
-        top: 20px; /* Конечная позиция */
-        opacity: 1; /* Видимо */
-    }
-}
-
-@keyframes slideOut {
-    0% {
-        top: 20px; /* Конечная позиция */
-        opacity: 1; /* Видимо */
-    }
-    100% {
-        top: -100px; /* Скрываем вверх */
-        opacity: 0; /* Скрыто */
-    }
-}
-
-/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!   Скрыть кнопку в интерфейсе загадать слово   и настройки    !!!!!!!!!!!!!!!!!*/
-        #setWordButton {
-    display: none; 
+        /* Стили для попапа статистики */
+        #stats-distribution {
+            text-align: left;
+            margin-top: 15px;
         }
-        #settingsButton {
-    display: none;
+        #stats-distribution .dist-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
         }
-/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!   Скрыть кнопку в интерфейсе загадать слово и настройки      !!!!!!!!!!!!!!!!!*/
-
+        #stats-distribution .dist-bar {
+            background-color: #007bff;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            min-width: 25px; /* Минимальная ширина для видимости */
+            text-align: right;
+        }
     </style>
 </head>
 <body>  
 
     <div id="game">
-        <div id="menuButton" class="menu-button">
-            <img src="menu_icon2.png" alt="Меню" class="menu-icon" />  <!-- Здесь вставь изображение для кнопки меню -->
-        </div>
-        <div id="timer" class="timer">00:00</div>
-        <div id="menuPopup" class="popup">
-            <div class="popup-content">
-                <h2>Меню</h2>
-                <div id="difficultySection">
-                    <label class="difficulty-label">КОЛИЧЕСТВО БУКВ В СЛОВЕ</label>
-                    <div id="difficultyButtons">
-                        <button class="difficulty-button" data-value="4">4</button>
-                        <button class="difficulty-button" data-value="5" selected>5</button>
-                        <button class="difficulty-button" data-value="6">6</button>
-                        <button class="difficulty-button" data-value="7">7</button>
-                        <button class="difficulty-button" data-value="8">8</button>
-                        <button class="difficulty-button" data-value="9">9</button>
-                        <button class="difficulty-button" data-value="10">10</button>
-                        <button class="difficulty-button" data-value="11">11</button>
-                    </div>
-                </div>
-                <div class="theme-container">
-                    <img src="sun.png" alt="Солнце" class="theme-icon" id="sunIcon">
-                    <input type="checkbox" id="darkModeSwitch" class="theme-toggle">
-                    <img src="moon.png" alt="Луна" class="theme-icon" id="moonIcon">
-                </div>
-                <button id="settingsButton" class="button">Настройки</button>               
-                <button id="statsButton" class="button">Статистика</button>
-                <button id="rulesButton" class="button">Правила игры</button>
-                <button id="closeMenuButton" class="button">Закрыть</button>
-
-                <button id="settingsButton" class="button">Настройки</button>    <!--скрыто  -->
-                <button id="setWordButton" class="button">Загадать слово</button> <!--скрыто  -->
+        <div style="position: absolute; top: 10px; left: 10px; z-index: 100;">
+            <div id="menuButton" class="menu-button">
+                <img src="menu_icon2.png" alt="Меню" class="menu-icon" />
             </div>
         </div>
-
-        <div id="settingsPopup" class="popup">
-            <div class="popup-content">
-                <h2>Настройки</h2>
-                <label for="darkModeSwitch" class="theme-label">Темная тема</label>
-                <input type="checkbox" id="darkModeSwitch" class="theme-toggle">
-                <button id="closeSettingsButton">Закрыть</button>
-            </div>
-        </div>
-
-        <div id="setWordPopup" class="popup">
-            <div class="popup-content">
-                <h2>Загадать слово</h2>
-                <input type="text" id="setWordInput" placeholder="Введите слово (4-11 букв)">
-                <button id="generateLinkButton">Сгенерировать ссылку</button>
-                <button id="closeSetWordButton">Закрыть</button>
-            </div>
-        </div>
-
-        <div id="statsPopup" class="popup">
-            <div class="popup-content">
-                <h2>Статистика</h2>
-                <p>Здесь будет статистика игры.</p>
-                <button id="closeStatsButton">Закрыть</button>
-            </div>
-        </div>
-        <div id="notification" class="notification"></div> <!--всплывающее окно -->
+         <div id="timer" class="timer">00:00</div>
 
         <div id="board"></div>
-        <p id="message"></p>
-        
+
         <div class="keyboard">
             <div class="keyboard-row">
-                <div class="key">Й</div>
-                <div class="key">Ц</div>
-                <div class="key">У</div>
-                <div class="key">К</div>
-                <div class="key">Е</div>
-                <div class="key">Н</div>
-                <div class="key">Г</div>
-                <div class="key">Ш</div>
-                <div class="key">Щ</div>
-                <div class="key">З</div>
-                <div class="key">Х</div>
+                <div class="key">Й</div><div class="key">Ц</div><div class="key">У</div><div class="key">К</div><div class="key">Е</div><div class="key">Н</div><div class="key">Г</div><div class="key">Ш</div><div class="key">Щ</div><div class="key">З</div><div class="key">Х</div>
             </div>
             <div class="keyboard-row">
-                <div class="key">Ф</div>
-                <div class="key">Ы</div>
-                <div class="key">В</div>
-                <div class="key">А</div>
-                <div class="key">П</div>
-                <div class="key">Р</div>
-                <div class="key">О</div>
-                <div class="key">Л</div>
-                <div class="key">Д</div>
-                <div class="key">Ж</div>
-                <div class="key">Э</div>
+                <div class="key">Ф</div><div class="key">Ы</div><div class="key">В</div><div class="key">А</div><div class="key">П</div><div class="key">Р</div><div class="key">О</div><div class="key">Л</div><div class="key">Д</div><div class="key">Ж</div><div class="key">Э</div>
             </div>
             <div class="keyboard-row">
-                <div class="key">Я</div>
-                <div class="key">Ч</div>
-                <div class="key">С</div>
-                <div class="key">М</div>
-                <div class="key">И</div>
-                <div class="key">Т</div>
-                <div class="key">Ь</div>
-                <div class="key">Б</div>
-                <div class="key">Ю</div>
-                <div class="key delete">⬅️</div> 
+                <div class="key">Я</div><div class="key">Ч</div><div class="key">С</div><div class="key">М</div><div class="key">И</div><div class="key">Т</div><div class="key">Ь</div><div class="key">Б</div><div class="key">Ю</div><div class="key delete">⬅️</div> 
             </div>
             <div class="keyboard-row">
-                <div class="key lightbulb" data-hint="true">Подсказка 💡</div> <!-- Кнопка подсказки если менять не забыть поменять  if (letter === 'Подсказка') --> 
-                <div class="key check">ПРОВЕРИТЬ СЛОВО</div> <!-- если менять не забыть поменять  if (letter === 'ПРОВЕРИТЬ СЛОВО') -->
-                    <!-- Контейнер для баннера (помещаем его под клавиатурой) -->
-                <div id="bannerAdContainer" style="position: fixed; bottom: 60px; left: 0; right: 0; text-align: center;">
+                <div class="key lightbulb" data-hint="true">Подсказка 💡</div>
+                <div class="key check">ПРОВЕРИТЬ</div>
             </div>
         </div>
-
-        <div id="popup">
-            <p id="popupMessage"></p>
-            <p id="popupTime"></p>
-            <button id="restartButton" class="button">Начать заново</button>
-        </div> 
+    </div>
+    
+    <div id="menuPopup" class="popup">
+        <div class="popup-content">
+            <h2>Меню</h2>
+            <div id="difficultySection">
+                <label class="difficulty-label">КОЛИЧЕСТВО БУКВ</label>
+                <div id="difficultyButtons">
+                    <button class="difficulty-button" data-value="4">4</button>
+                    <button class="difficulty-button" data-value="5">5</button>
+                    <button class="difficulty-button" data-value="6">6</button>
+                    <button class="difficulty-button" data-value="7">7</button>
+                    <button class="difficulty-button" data-value="8">8</button>
+                </div>
+            </div>
+            <button id="setWordButton" class="button">Загадать другу</button>
+            <button id="statsButton" class="button">Статистика</button>
+            <button id="rulesButton" class="button">Правила игры</button>
+            <button id="closeMenuButton" class="button">Закрыть</button>
+        </div>
     </div>
 
+    <div id="setWordPopup" class="popup">
+        <div class="popup-content">
+            <h2>Загадать слово</h2>
+            <input type="text" id="setWordInput" placeholder="Введите слово (4-8 букв)" style="width: 80%; padding: 10px; font-size: 16px;">
+            <button id="generateLinkButton" class="button">Сгенерировать ссылку</button>
+            <button id="closeSetWordButton" class="button">Закрыть</button>
+        </div>
+    </div>
+
+    <div id="statsPopup" class="popup">
+        <div class="popup-content">
+            <h2>Статистика</h2>
+            <div style="display: flex; justify-content: space-around; text-align: center;">
+                <div>
+                    <h3 id="stats-played">0</h3>
+                    <p>Сыграно</p>
+                </div>
+                <div>
+                    <h3 id="stats-wins">0</h3>
+                    <p>Побед %</p>
+                </div>
+                <div>
+                    <h3 id="stats-current-streak">0</h3>
+                    <p>Текущая серия</p>
+                </div>
+                <div>
+                    <h3 id="stats-max-streak">0</h3>
+                    <p>Макс. серия</p>
+                </div>
+            </div>
+            <h4>Распределение попыток:</h4>
+            <div id="stats-distribution">
+                </div>
+            <button id="closeStatsButton" class="button">Закрыть</button>
+        </div>
+    </div>
+
+    <div id="popup">
+        <p id="popupMessage"></p>
+        <p id="popupTime"></p>
+        <button id="restartButton" class="button">Начать заново</button>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
     <script>
-        // Инициализация VK Bridge 
-        vkBridge.send("VKWebAppInit", {})
-    .then(() => {
-        // Отображаем баннерную рекламу сразу после инициализации
-        showBannerAd();
-    })
-    .catch((error) => {
-        console.log('Ошибка инициализации VKBridge:', error);
-    });
+        // =================================================================
+        //          БЛОК УПРАВЛЕНИЯ РЕКЛАМОЙ VK BRIDGE
+        // =================================================================
 
-//              Функция для отображения баннерной рекламы
-function showBannerAd() {
-    vkBridge.send('VKWebAppShowBannerAd', {
-        banner_location: 'bottom' // Позиция баннера: низ страницы
-    })
-    .then((data) => { 
-        if (data.result) {
-            console.log('Баннерная реклама отобразилась');
+        // Инициализируем VK Bridge один раз при загрузке
+        vkBridge.send("VKWebAppInit", {}).catch((error) => console.log('Ошибка инициализации VKBridge:', error));
+
+        /**
+         * @description Показывает баннерную рекламу внизу экрана.
+         */
+        function showBannerAd() {
+            vkBridge.send('VKWebAppShowBannerAd', {
+                banner_location: 'bottom'
+            }).then(data => {
+                if (data.result) {
+                    console.log('Баннер успешно показан.');
+                    // Сдвигаем клавиатуру вверх, чтобы баннер ее не перекрывал
+                    // Высота баннера обычно около 50-60px
+                    document.querySelector('.keyboard').style.bottom = '50px'; 
+                }
+            }).catch(error => console.log('Ошибка показа баннера:', error));
         }
-    })
-    .catch((error) => {
-        // Ошибка
-        console.log('Ошибка отображения баннерной рекламы:', error);
-    });
-}    //          Функция для отображения баннерной рекламы
-        
 
-        
-        let validWords = {}; // Для проверки существующих слов
-        let wordsOne = {};   // Для загаданного слова
-        let words = [];      // Для хранение текущего уровня сложности
+        /**
+         * @description Показывает межстраничную рекламу (interstitial).
+         */
+        function showInterstitialAd() {
+            vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'interstitial' })
+                .catch(error => console.log('Ошибка показа межстраничной рекламы:', error));
+        }
 
+        /**
+         * @description Показывает рекламу за вознаграждение (rewarded).
+         * @returns {Promise<boolean>} Возвращает Promise, который резолвится в true, если реклама была просмотрена, и в false в противном случае.
+         */
+        function showRewardedAd() {
+            return new Promise((resolve) => {
+                vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'reward' })
+                    .then(data => {
+                        if (data.result) {
+                            console.log('Реклама за вознаграждение просмотрена.');
+                            resolve(true); // Пользователь посмотрел рекламу
+                        } else {
+                            console.log('Пользователь закрыл рекламу, не досмотрев.');
+                            resolve(false); // Пользователь не получил вознаграждение
+                        }
+                    })
+                    .catch(error => {
+                        console.log('Ошибка показа рекламы за вознаграждение:', error);
+                        resolve(false); // Ошибка, вознаграждения нет
+                    });
+            });
+        }
+        // =================== КОНЕЦ БЛОКА УПРАВЛЕНИЯ РЕКЛАМОЙ ===================
+
+        // =================================================================
+        //                 БЛОК СТАТИСТИКИ И СОХРАНЕНИЯ
+        // =================================================================
+
+        let gameStats; // Глобальная переменная для хранения статистики
+        const defaultStats = {
+            gamesPlayed: 0,
+            wins: 0,
+            currentStreak: 0,
+            maxStreak: 0,
+            guessDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }
+        };
+        const STATS_STORAGE_KEY = 'wordle_game_stats_v2'; // Ключ для хранения в VK
+
+        async function loadStats() {
+            try {
+                const data = await vkBridge.send('VKWebAppStorageGet', { keys: [STATS_STORAGE_KEY] });
+                if (data.keys[0].value) {
+                    gameStats = JSON.parse(data.keys[0].value);
+                    console.log("Статистика успешно загружена.");
+                } else {
+                    gameStats = { ...defaultStats };
+                    console.log("Статистика не найдена, создана новая.");
+                }
+            } catch (error) {
+                console.error("Ошибка загрузки статистики:", error);
+                gameStats = { ...defaultStats };
+            }
+        }
+
+        function saveStats() {
+            vkBridge.send('VKWebAppStorageSet', {
+                key: STATS_STORAGE_KEY,
+                value: JSON.stringify(gameStats)
+            }).then(() => console.log("Статистика сохранена."))
+              .catch(error => console.error("Ошибка сохранения статистики:", error));
+        }
+
+        function displayStats() {
+            document.getElementById('stats-played').textContent = gameStats.gamesPlayed;
+            const winPercentage = gameStats.gamesPlayed > 0 ? Math.round((gameStats.wins / gameStats.gamesPlayed) * 100) : 0;
+            document.getElementById('stats-wins').textContent = winPercentage;
+            document.getElementById('stats-current-streak').textContent = gameStats.currentStreak;
+            document.getElementById('stats-max-streak').textContent = gameStats.maxStreak;
+            
+            const distributionContainer = document.getElementById('stats-distribution');
+            distributionContainer.innerHTML = '';
+            const maxCount = Math.max(...Object.values(gameStats.guessDistribution));
+
+            for (let i = 1; i <= 6; i++) {
+                const count = gameStats.guessDistribution[i] || 0;
+                const barWidth = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                const row = document.createElement('div');
+                row.className = 'dist-row';
+                row.innerHTML = `
+                    <span>${i}</span>
+                    <div class="dist-bar" style="width: ${barWidth}%;">${count}</div>
+                `;
+                distributionContainer.appendChild(row);
+            }
+        }
+
+        function updateStats(didWin, attemptCount) {
+            gameStats.gamesPlayed++;
+            if (didWin) {
+                gameStats.wins++;
+                gameStats.currentStreak++;
+                if (gameStats.currentStreak > gameStats.maxStreak) {
+                    gameStats.maxStreak = gameStats.currentStreak;
+                }
+                if (attemptCount >= 1 && attemptCount <= 6) {
+                    gameStats.guessDistribution[attemptCount]++;
+                }
+            } else {
+                gameStats.currentStreak = 0;
+            }
+            saveStats();
+        }
+        // =================== КОНЕЦ БЛОКА СТАТИСТИКИ ===================
+
+        // =================================================================
+        //                 ОСНОВНАЯ ЛОГИКА ИГРЫ
+        // =================================================================
+
+        let validWords = {};
+        let wordsOne = {};
+        let words = [];
+        let targetWord = "";
         let currentWord = ""; 
         let attempts = 0; 
         let usedWords = []; 
-        let isProcessing = false; 
-
-        // Загружаем слова из dictionary.json
-        fetch('dictionary.json')
-    .then(response => response.json())
-    .then(data => {
-        validWords = data.words;
-        wordsOne = data.wordsOne;
-
-        // Выберите уровень сложности по умолчанию - 5 букв
-        words = wordsOne["5"];  
-        createBoard(); 
-        document.querySelector('.key.check').addEventListener('click', checkWord); 
-    })
-    .catch(error => console.error('Ошибка при загрузке слов:', error));
-
-            let timer; 
-let timeElapsed = 0; 
-let isTimerRunning = false; // Флаг для отслеживания состояния таймера
-
-function startTimer() {
-    if (isTimerRunning) return; // Не запускайте, если таймер уже запущен
-    isTimerRunning = true; // Устанавливаем флаг
-
-    timeElapsed = 0; 
-    timer = setInterval(() => {
-        timeElapsed++;
-        updateTimerDisplay(); 
-    }, 1000);
-}
-
-function stopTimer() {
-    clearInterval(timer); 
-    isTimerRunning = false; // Сбрасываем флаг
-}
-
-function resetTimer() {
-    stopTimer(); 
-    timeElapsed = 0; 
-    updateTimerDisplay(); 
-}
-
-                function updateTimerDisplay() {
-            const minutes = String(Math.floor(timeElapsed / 60)).padStart(2, '0'); // Форматируем минуты
-            const seconds = String(timeElapsed % 60).padStart(2, '0'); // Форматируем секунды
-            document.getElementById('timer').textContent = `${minutes}:${seconds}`; // Обновляем текст
-        }
-
-// Обновите событие для клавиш ввод с клавиатуры 
-document.addEventListener('keydown', (event) => {
-    const key = event.key; // Получаем нажатую клавишу
-
-    if (isProcessing) return; // Если в процессе обработки, выходим
-
-    // Проверяем, является ли нажатая клавиша буквой
-    if (key.length === 1 && /^[А-Яа-яЁё]$/.test(key)) {
-        addLetter(key.toUpperCase()); // Приводим к верхнему регистру
-    } else if (key === 'Backspace') {
-        removeLetter();
-    } else if (key === 'Enter') {
-        checkWord();
-    }
-});
-
-function addLetter(letter) {
-    if (isProcessing) return; // Если в процессе обработки, выходим
-    isProcessing = true; // Устанавливаем флаг, чтобы предотвратить дальнейшую обработку
-
-    const rowCells = document.getElementsByClassName('row')[attempts]?.children; // Получаем текущее состояние ячеек
-
-    if (currentWord.length < words[0].length) {
-        // Проверяем, если в текущей ячейке уже есть буква с подсказкой
-        if (rowCells[currentWord.length].style.color === 'rgba(0, 0, 0, 0.3)') {
-            // Убираем букву из подсказки и сбрасываем стиль
-            rowCells[currentWord.length].textContent = ''; // Удаляем текст
-            rowCells[currentWord.length].style.color = ''; // Сбрасываем цвет
-            rowCells[currentWord.length].classList.remove('correct'); // Удаляем класс правильного ответа, если он есть
-        }
-
-        currentWord += letter; // Добавляем новую букву
-        updateBoard(); // Обновляем состояние доски
-    }
-
-    setTimeout(() => {
-        isProcessing = false; // Сбрасываем флаг после небольшой задержки
-    }, 100); // Задержка по вкусу (например, 100 мс).
-}
-
-// После изменений, любой ввод после нажатия кнопки 💡 будет игнорировать символы, которые не должны появляться.
-
-document.querySelectorAll('.key').forEach(key => {
-    key.addEventListener('click', () => {
-        const letter = key.textContent;
-
-        // Игнорируем обработку для кнопки подсказки
-        if (letter === 'Подсказка 💡') {
-            return; // Прекращаем дальнейшую обработку
-        } 
-         // Игнорируем обработку для кнопки подсказки
-        if (letter === 'ПРОВЕРИТЬ СЛОВО') {
-            return; // Прекращаем дальнейшую обработку
-        }
-
-        // Если все в норме, обрабатываем нажатия на клавиши
-        if (isProcessing) return; 
-                
-        if (letter === '⬅️') {
-            removeLetter();
-        } else {
-            addLetter(letter);
-        }
-    });
-});
-
+        let isProcessing = false;
+        let correctLetters = [];
         
+        // Запрещаем вызов контекстного меню (правая кнопка мыши)
+        document.addEventListener('contextmenu', event => event.preventDefault());
 
-        function removeLetter() {
-            if (currentWord.length > 0) {
-                currentWord = currentWord.slice(0, -1);
+        // Загружаем слова и инициализируем игру
+        fetch('dictionary.json')
+            .then(response => response.json())
+            .then(async data => {
+                validWords = data.words;
+                wordsOne = data.wordsOne;
+                
+                await loadStats(); // Ждем загрузки статистики перед началом
+                
+                // Устанавливаем сложность по умолчанию
+                selectDifficulty("5");
+                showBannerAd(); // Показываем баннер после инициализации
+            })
+            .catch(error => console.error('Ошибка при загрузке слов:', error));
+        
+        function selectDifficulty(difficulty) {
+            words = wordsOne[difficulty];
+            document.querySelectorAll('.difficulty-button').forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.getAttribute('data-value') === difficulty) {
+                    btn.classList.add('selected');
+                }
+            });
+            restartGame();
+        }
+
+        function restartGame() {
+            document.getElementById('popup').style.display = 'none';
+            attempts = 0;
+            currentWord = "";
+            usedWords = [];
+            resetKeyboard();
+            resetTimer();
+            createBoard();
+        }
+
+        function createBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = ''; 
+            
+            const challengeWord = checkForChallengeWord();
+            const wordLength = challengeWord ? challengeWord.length : words[0].length;
+            
+            for (let i = 0; i < 6; i++) { 
+                const row = document.createElement('div');
+                row.className = 'row';
+                for (let j = 0; j < wordLength; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    row.appendChild(cell);
+                }
+                board.appendChild(row);
+            }
+            
+            targetWord = challengeWord ? challengeWord : getNewWord();
+            correctLetters = new Array(wordLength).fill(false);
+            
+            const inChallengeMode = !!challengeWord;
+            document.querySelectorAll('.difficulty-button').forEach(btn => {
+                btn.disabled = inChallengeMode;
+                 if (inChallengeMode && btn.dataset.value == wordLength) {
+                    btn.classList.add('selected');
+                } else if (inChallengeMode) {
+                    btn.classList.remove('selected');
+                }
+            });
+
+            startTimer();
+        }
+
+        function checkWord() {
+            if (currentWord.length !== targetWord.length) {
+                showNotification(`Слово должно состоять из ${targetWord.length} букв.`);
+                return; 
+            }
+            if (!validWords[String(targetWord.length)].includes(currentWord)) {
+                showNotification("Такого слова нет в словаре.");
+                return; 
+            }
+
+            const rowCells = document.getElementsByClassName('row')[attempts].children;
+            const letterCount = {};
+            for (let letter of targetWord) {
+                letterCount[letter] = (letterCount[letter] || 0) + 1;
+            }
+
+            // Сначала проверяем правильные буквы на правильных местах (зеленые)
+            for (let i = 0; i < targetWord.length; i++) {
+                if (currentWord[i] === targetWord[i]) {
+                    rowCells[i].classList.add('correct'); 
+                    markKey(currentWord[i], 'correct');  
+                    letterCount[currentWord[i]]--;
+                    correctLetters[i] = true;
+                }
+            }
+            
+            // Затем проверяем остальные буквы (желтые и серые)
+            for (let i = 0; i < targetWord.length; i++) {
+                if (rowCells[i].classList.contains('correct')) continue;
+                
+                if (targetWord.includes(currentWord[i]) && letterCount[currentWord[i]] > 0) {
+                    rowCells[i].classList.add('present'); 
+                    markKey(currentWord[i], 'present'); 
+                    letterCount[currentWord[i]]--;
+                } else {
+                    rowCells[i].classList.add('absent'); 
+                    markKey(currentWord[i], 'absent'); 
+                }
+            }
+            
+            attempts++;
+
+            if (currentWord === targetWord) {
+                stopTimer();
+                updateStats(true, attempts);
+                setTimeout(() => showEndGamePopup(`Вы угадали: ${targetWord}!`), 500);
+            } else if (attempts === 6) {
+                stopTimer();
+                updateStats(false, attempts);
+                setTimeout(() => showEndGamePopup(`Загаданное слово: ${targetWord}`), 500);
+            } 
+            currentWord = ""; 
+        }
+
+        // Остальные функции (addLetter, removeLetter, updateBoard, таймер и т.д.)
+        function addLetter(letter) {
+            if (currentWord.length < targetWord.length) {
+                currentWord += letter;
                 updateBoard();
             }
         }
-
+        function removeLetter() {
+            currentWord = currentWord.slice(0, -1);
+            updateBoard();
+        }
         function updateBoard() {
             const rowCells = document.getElementsByClassName('row')[attempts]?.children;
-            if (!rowCells) return; 
-
-            for (let i = 0; i < currentWord.length; i++) {
-                if (i < rowCells.length) {
-                    rowCells[i].textContent = currentWord[i];
-                }
-            }
-            for (let i = currentWord.length; i < rowCells.length; i++) {
-                rowCells[i].textContent = '';
+            if (!rowCells) return;
+            for (let i = 0; i < targetWord.length; i++) {
+                rowCells[i].textContent = currentWord[i] || '';
             }
         }
-
-        function showPopup(message, time) {
-            document.getElementById('popupMessage').textContent = message; 
-            document.getElementById('popupTime').textContent = `Время: ${time}`; 
-            document.getElementById('popup').style.display = 'block'; 
+        
+        function getNewWord() {
+            let newWord;
+            do {
+                newWord = words[Math.floor(Math.random() * words.length)];
+            } while (usedWords.includes(newWord)); 
+            usedWords.push(newWord); 
+            return newWord;
         }
-
-        let correctLetters = []; // Массив для хранения отгаданных букв.
-
-// Функция для создания игрового поля
-function createBoard() {
-    const board = document.getElementById('board');
-    board.innerHTML = ''; 
-    const wordLength = words[0].length; // Длина слова для текущего уровня сложности
-    
-    // Создаем 6 рядов для игры
-    for (let i = 0; i < 6; i++) { 
-        const row = document.createElement('div');
-        row.className = 'row';
-        for (let j = 0; j < wordLength; j++) {
-            const cell = document.createElement('div');
-            cell.className = 'cell';
-            row.appendChild(cell);
-        }
-        board.appendChild(row);
-    }
-    targetWord = getNewWord(); // Генерация загаданного слова
-    startTimer(); // Запуск таймера
-}
-
-function checkWord() {
-    const message = document.getElementById('message');
-    if (currentWord.length !== words[0].length) {
-        showNotification("Пожалуйста, введите " + words[0].length + "-буквенное слово.");
-        return; 
-    }
-
-    const currentDifficultyWords = validWords[`${words[0].length}`];
-    if (!currentDifficultyWords.includes(currentWord)) {
-        showNotification("Такого слова нет в базе игры.");
-        return; 
-    }
-
-    const rowCells = document.getElementsByClassName('row')[attempts].children;
-    const letterCount = {}; 
-
-    for (let letter of targetWord) {
-        letterCount[letter] = (letterCount[letter] || 0) + 1;
-    }
-
-    const guessedLetterCount = {}; 
-
-    for (let i = 0; i < words[0].length; i++) {
-        if (currentWord[i] === targetWord[i]) {
-            rowCells[i].textContent = currentWord[i];
-            rowCells[i].classList.add('correct'); 
-            markKey(currentWord[i], 'correct');  
-            guessedLetterCount[currentWord[i]] = (guessedLetterCount[currentWord[i]] || 0) + 1; 
-            letterCount[currentWord[i]]--;
-            correctLetters[i] = true; // Запоминаем, что буква угадана
-        }
-    }
-
-    for (let i = 0; i < words[0].length; i++) {
-        if (rowCells[i].classList.contains('correct')) {
-            continue;
-        }
-
-        if (targetWord.includes(currentWord[i]) && (letterCount[currentWord[i]] > 0)) {
-            rowCells[i].textContent = currentWord[i];
-            rowCells[i].classList.add('present'); 
-            markKey(currentWord[i], 'present'); 
-            guessedLetterCount[currentWord[i]] = (guessedLetterCount[currentWord[i]] || 0) + 1; 
-            letterCount[currentWord[i]]--; 
-        } else {
-            rowCells[i].textContent = currentWord[i];
-            rowCells[i].classList.add('absent'); 
-            markKey(currentWord[i], 'absent'); 
-        }
-    }
-
-    attempts++;
-
-    if (currentWord === targetWord) {
-        const timeSpent = document.getElementById('timer').textContent; 
-        showPopup(`Поздравляю, вы угадали слово: ${targetWord}!`, timeSpent);
-        stopTimer(); 
-    } else if (attempts === 6) {
-        showPopup(`Вы исчерпали все попытки! Загаданное слово: ${targetWord}`, document.getElementById('timer').textContent);
-        stopTimer(); 
-    } 
-
-    currentWord = ""; 
-}
-// кнопка начать заново 
-
-document.getElementById('restartButton').addEventListener('click', () => {
-    // Логика кнопки
-    document.getElementById('popup').style.display = 'none'; 
-    attempts = 0; 
-    currentWord = ""; 
-    resetKeyboard(); 
-    resetTimer(); 
-    createBoard(); 
-    hintIndex = 0; 
-    correctLetters = []; 
-
-    // Проверяем готовность рекламы
-    vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'interstitial' })
-        .then((data) => {
-            if (data.result) { // Проверяем наличие рекламы
-                // Показываем рекламу
-                vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'interstitial' })
-                    .then((adData) => {
-                        if (adData.result) {
-                            console.log('Реклама показана');
-                        } else {
-                            console.log('Ошибка при показе рекламы', adData.error);
-                        }
-                    })
-                    .catch((error) => {
-                        console.log('Ошибка при показе рекламы:', error);
-                    });
-            } else {
-                console.log('Реклама не готова');
-            }
-        })
-        .catch((error) => {
-            console.log('Ошибка проверки рекламы:', error);
-        });
-});
-
-        function clearCurrentWord() {
-            currentWord = ""; 
-            const rowCells = document.getElementsByClassName('row')[attempts].children;
-            for (let i = 0; i < rowCells.length; i++) {
-                rowCells[i].textContent = ""; 
-            }
-        }
-
-        function markKey(letter, newState) {
-            const key = [...document.querySelectorAll('.key')].find(k => k.textContent === letter);
-            const priority = {
-                'correct': 1,
-                'present': 2,
-                'absent': 3
-            };
-
-            if (key) {
-                const currentStates = ['correct', 'present', 'absent'].find(state => key.classList.contains(state));
-                if (currentStates) {
-                    if (priority[newState] < priority[currentStates]) {
-                        key.classList.remove(currentStates);
-                    } else if (priority[newState] >= priority[currentStates]) {
-                        return; 
-                    }
-                }
-                key.classList.add(newState);
-            }
-        }
-
-// Функция для получения нового загаданного слова
-function getNewWord() {
-    let newWord;
-    do {
-        newWord = words[Math.floor(Math.random() * words.length)]; // Выбор случайного слова из текущего массива
-    } while (usedWords.includes(newWord)); 
-    usedWords.push(newWord); 
-    return newWord;
-}
 
         function resetKeyboard() {
             document.querySelectorAll('.key').forEach(key => {
@@ -1002,240 +694,145 @@ function getNewWord() {
             });
         }
         
-
-        const menuButton = document.getElementById('menuButton');
-const menuPopup = document.getElementById('menuPopup');
-const closeMenuButton = document.getElementById('closeMenuButton');
-
-// Открываем меню сразу после инициализации игры
-menuPopup.style.display = 'block'; // Это откроет меню при загрузке страницы
-
-menuButton.addEventListener('click', () => {
-    menuPopup.style.display = 'block'; // Показываем меню
-});
-
-closeMenuButton.addEventListener('click', () => {
-    menuPopup.style.display = 'none'; // Закрываем меню
-});
-
-document.querySelectorAll('.difficulty-button').forEach(button => {
-    if (button.getAttribute('data-value') === "5") {
-        button.classList.add('selected'); // Добавляем класс 'selected' к кнопке 5
-    }
-    button.addEventListener('click', () => {
-        stopTimer(); // Остановите текущий таймер
-        const difficulty = button.getAttribute('data-value'); // Получаем значение уровня из атрибута data-value
-
-        // Устанавливаем слова в зависимости от выбранного уровня сложности из wordsOne
-        words = wordsOne[difficulty];  
-
-        // Удаляем класс 'selected' с других кнопок
-        document.querySelectorAll('.difficulty-button').forEach(btn => btn.classList.remove('selected'));
-        button.classList.add('selected'); // Устанавливаем класс 'selected' для нажатой кнопки
-
-        attempts = 0; 
-        currentWord = ""; 
-        usedWords = []; 
-        hintIndex = 0; // Сбросить индекс подсказки при смене уровня
-        correctLetters = []; // Сбросить правильные буквы
-        createBoard(); 
-        resetKeyboard(); 
-        startTimer(); // Запускаем новый таймер
-
-     /*   // Проверяем готовность рекламы к показу
-        vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'interstitial' })
-            .then((data) => {
-                if (data.result) { // Если реклама готова
-                    // Показываем рекламу
-                    vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'interstitial' })
-                        .then((adData) => {
-                            if (adData.result) {
-                                console.log('Реклама показана');
-                            } else {
-                                console.log('Ошибка при показе рекламы');
-                            }
-                        })
-                        .catch((error) => {
-                            console.log(error); // Ошибка показа рекламы
-                        });
-                } else {
-                    console.log('Реклама не готова');
-                }
-            })
-            .catch((error) => {
-                console.log(error); // Ошибка проверки рекламы
-            }); */
-
-        // Закрываем меню
-        menuPopup.style.display = 'none'; // Закрываем меню
-    });
-});
-
-const settingsButton = document.getElementById('settingsButton');
-const settingsPopup = document.getElementById('settingsPopup');
-const closeSettingsButton = document.getElementById('closeSettingsButton');
-const darkModeSwitch = document.getElementById('darkModeSwitch');
-const menuButtonIcon = document.querySelector('.menu-button img');
-
-settingsButton.addEventListener('click', () => {
-    settingsPopup.style.display = 'block'; // Показываем настройки
-});
-
-closeSettingsButton.addEventListener('click', () => {
-    settingsPopup.style.display = 'none'; // Закрываем настройки
-});
-
-// Обработка переключателя темной темы
-darkModeSwitch.addEventListener('change', () => {
-    document.body.classList.toggle('dark-mode'); // Переключаем класс
-    // Изменяем изображение кнопки в зависимости от темы
-    if (document.body.classList.contains('dark-mode')) {
-        menuButtonIcon.src = 'menu_icon2-body.dark-mode.png'; // Укажите путь к изображению для темной темы
-    } else {
-        menuButtonIcon.src = 'menu_icon2.png'; // Укажите путь к изображению для светлой темы
-    }
-});
-
-const setWordButton = document.getElementById('setWordButton');
-const setWordPopup = document.getElementById('setWordPopup');
-const closeSetWordButton = document.getElementById('closeSetWordButton');
-const setWordInput = document.getElementById('setWordInput');
-const generateLinkButton = document.getElementById('generateLinkButton');
-
-setWordButton.addEventListener('click', () => {
-    setWordPopup.style.display = 'block'; // Показываем меню для задания слова
-});
-
-closeSetWordButton.addEventListener('click', () => {
-    setWordPopup.style.display = 'none'; // Закрываем меню
-});
-
-generateLinkButton.addEventListener('click', () => {
-    const word = setWordInput.value.trim();
-    if (word.length < 4 || word.length > 11) {
-        alert("Слово должно содержать от 4 до 11 букв.");
-        return;
-    }
-    // Здесь добавь логику для генерации ссылки с загаданным словом
-    alert(`Ссылка на игровое слово: yourgameurl.com?word=${word}`);
-});
-
-const statsButton = document.getElementById('statsButton');
-const statsPopup = document.getElementById('statsPopup');
-const closeStatsButton = document.getElementById('closeStatsButton');
-
-statsButton.addEventListener('click', () => {
-    statsPopup.style.display = 'block'; // Показываем статистику
-});
-
-closeStatsButton.addEventListener('click', () => {
-    statsPopup.style.display = 'none'; // Закрываем статистику
-});
-
-let hintIndex = 0; // Переменная вне функции для отслеживания позиции подсказки
-
-// Обработчик нажатия кнопки подсказки
-document.querySelector('.key.lightbulb').addEventListener('click', () => {
-    console.log(`Подсказка нажата.`);
-
-    // Проверка готовности рекламы
-    vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'reward' })
-        .then((data) => {
-            if (data.result) {
-                // Если реклама готова, показываем ее
-                showRewardAd();
-            } else {
-                console.log('Рекламные материалы не найдены.');
-                // Если рекламы нет, сразу показываем подсказку
-                showHint();
-            }
-        })
-        .catch((error) => {
-            console.log(error); // Ошибка
-            // В случае ошибки показываем подсказку
-            showHint();
-        });
-});
-
-// Функция для показа рекламы
-function showRewardAd() {
-    // Показать рекламу
-    vkBridge.send('VKWebAppShowNativeAds', { ad_format: 'reward' })
-        .then((data) => {
-            if (data.result) {
-                console.log('Реклама показана');
-                // После успешного просмотра рекламы показываем подсказку
-                showHint(); // Предоставляем подсказку пользователю
-            } else {
-                console.log('Ошибка при показе');
-                // В случае ошибки сразу показываем подсказку
-                showHint();
-            }
-        })
-        .catch((error) => {
-            console.log(error); // Ошибка
-            // В случае ошибки сразу показываем подсказку
-            showHint();
-        });
-}
-
-// Функция для показа подсказки
-function showHint() {
-    // Ищем первую букву, которая не была угадана
-    while (hintIndex < targetWord.length && correctLetters[hintIndex]) {
-        hintIndex++; // Находим следующую букву, которая не была отгадана
-    }
-
-    // Если есть буква для подсказки
-    if (hintIndex < targetWord.length) {
-        const rowCells = document.getElementsByClassName('row')[attempts].children;
-        const currentLetter = targetWord[hintIndex];
-
-        // Проверяем, была ли эта буква уже показана
-        if (rowCells[hintIndex].textContent === '') {
-            rowCells[hintIndex].textContent = currentLetter; // Показываем букву
-        
-            // Убираем зеленый цвет
-            rowCells[hintIndex].classList.remove('correct'); 
-        
-            // Добавляем стиль для легкой прозрачности
-            rowCells[hintIndex].style.color = 'rgba(0, 0, 0, 0.3)'; // Устанавливаем цвет буквы с прозрачностью
-        
-            // Обновляем клавиатуру
-            markKey(currentLetter, 'correct'); // Окрашиваем клавишу в зеленый
+        // --- Таймер ---
+        let timer; 
+        let timeElapsed = 0; 
+        function startTimer() {
+            stopTimer();
+            timeElapsed = 0;
+            updateTimerDisplay();
+            timer = setInterval(() => {
+                timeElapsed++;
+                updateTimerDisplay(); 
+            }, 1000);
         }
-        // Увеличиваем индекс для следующей попытки подсказки в следующий раз
-        hintIndex++;
-    } else {
-        console.log("Все буквы уже угаданы или показаны.");
-    }
-}
+        function stopTimer() { clearInterval(timer); }
+        function resetTimer() { stopTimer(); timeElapsed = 0; updateTimerDisplay(); }
+        function updateTimerDisplay() {
+            const minutes = String(Math.floor(timeElapsed / 60)).padStart(2, '0');
+            const seconds = String(timeElapsed % 60).padStart(2, '0');
+            document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+        }
+        
+        // --- Попапы и уведомления ---
+        function showEndGamePopup(message) {
+            document.getElementById('popupMessage').textContent = message; 
+            document.getElementById('popupTime').textContent = `Время: ${document.getElementById('timer').textContent}`; 
+            document.getElementById('popup').style.display = 'block'; 
+        }
 
-function showNotification(message) {
-    const notification = document.getElementById('notification');
-    notification.textContent = message; // Устанавливаем сообщение
-    notification.style.display = 'block'; // Показываем уведомление
-    notification.style.opacity = 1; // Делаем его видимым
-    notification.style.animation = 'slideIn 0.5s forwards'; // Применяем анимацию появления
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // --- Обработчики событий ---
+        document.addEventListener('keydown', (event) => {
+            const key = event.key.toUpperCase();
+            if (key.length === 1 && /^[А-ЯЁ]$/.test(key)) {
+                addLetter(key);
+            } else if (event.key === 'Backspace') {
+                removeLetter();
+            } else if (event.key === 'Enter') {
+                checkWord();
+            }
+        });
+        
+        document.querySelector('.keyboard').addEventListener('click', (event) => {
+            const target = event.target;
+            if (!target.classList.contains('key')) return;
+            
+            if (target.classList.contains('delete')) {
+                removeLetter();
+            } else if (target.classList.contains('check')) {
+                checkWord();
+            } else if (target.classList.contains('lightbulb')) {
+                // Логика подсказки останется здесь
+            } else {
+                addLetter(target.textContent);
+            }
+        });
+        
+        // --- Меню и кнопки ---
+        const menuPopup = document.getElementById('menuPopup');
+        document.getElementById('menuButton').addEventListener('click', () => menuPopup.style.display = 'flex');
+        document.getElementById('closeMenuButton').addEventListener('click', () => menuPopup.style.display = 'none');
+        document.querySelectorAll('.difficulty-button').forEach(button => {
+            button.addEventListener('click', () => {
+                selectDifficulty(button.dataset.value);
+                menuPopup.style.display = 'none';
+            });
+        });
+        document.getElementById('restartButton').addEventListener('click', () => {
+            showInterstitialAd();
+            restartGame();
+        });
 
-    // Убираем уведомление через 3 секунды
-    setTimeout(() => {
-        notification.style.animation = 'slideOut 0.5s forwards'; // Применяем анимацию исчезновения
-        setTimeout(() => {
-            notification.style.display = 'none'; // Скрываем окончательно
-        }, 500); // Время до полного исчезновения
-    }, 3000); // Уведомление будет отображаться 3 секунды
-}
+        // --- Статистика ---
+        const statsPopup = document.getElementById('statsPopup');
+        document.getElementById('statsButton').addEventListener('click', () => {
+            displayStats();
+            statsPopup.style.display = 'flex';
+        });
+        document.getElementById('closeStatsButton').addEventListener('click', () => statsPopup.style.display = 'none');
+        
+        // --- Правила ---
+        document.getElementById('rulesButton').addEventListener('click', () => {
+            window.location.href = 'instructions.html';
+        });
+        
+        // =================================================================
+        //                 ФУНКЦИОНАЛ "ЗАГАДАТЬ ДРУГУ"
+        // =================================================================
+        
+        const setWordPopup = document.getElementById('setWordPopup');
+        document.getElementById('setWordButton').addEventListener('click', () => setWordPopup.style.display = 'flex');
+        document.getElementById('closeSetWordButton').addEventListener('click', () => setWordPopup.style.display = 'none');
+        
+        document.getElementById('generateLinkButton').addEventListener('click', () => {
+            const wordInput = document.getElementById('setWordInput');
+            const word = wordInput.value.trim().toUpperCase();
 
-const rulesButton = document.getElementById('rulesButton'); // Получаем кнопку "Правила игры"
+            if (!/^[А-ЯЁ]{4,8}$/.test(word)) {
+                showNotification("Слово должно содержать 4-8 русских букв.");
+                return;
+            }
+            
+            const encodedWord = btoa(encodeURIComponent(word));
+            const gameUrl = window.location.origin + window.location.pathname + '?challenge=' + encodedWord;
 
-// Добавляем обработчик события для кнопки "Правила игры"
-rulesButton.addEventListener('click', () => {
-    window.location.href = 'instructions.html'; // Перенаправление на страницу с инструкцией
-});
+            navigator.clipboard.writeText(gameUrl).then(() => {
+                showNotification("Ссылка скопирована!");
+            }).catch(() => {
+                showNotification("Не удалось скопировать.");
+            });
+            setWordPopup.style.display = 'none';
+        });
 
+        function checkForChallengeWord() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const challengeData = urlParams.get('challenge');
+
+            if (challengeData) {
+                try {
+                    const decodedWord = decodeURIComponent(atob(challengeData));
+                    if (/^[А-ЯЁ]{4,8}$/.test(decodedWord)) {
+                        console.log("Найдено слово-вызов:", decodedWord);
+                        // Очищаем URL, чтобы при перезагрузке не было того же слова
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        return decodedWord;
+                    }
+                } catch (e) {
+                    console.error("Ошибка декодирования слова-вызова:", e);
+                }
+            }
+            return null;
+        }
 
     </script>
-
 </body>
 </html>
