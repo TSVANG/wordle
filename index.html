@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -1006,6 +1007,9 @@ function getNewWord() {
 const menuPopup = document.getElementById('menuPopup');
 const closeMenuButton = document.getElementById('closeMenuButton');
 
+// Открываем меню сразу после инициализации игры
+menuPopup.style.display = 'block'; // Это откроет меню при загрузке страницы
+
 menuButton.addEventListener('click', () => {
     menuPopup.style.display = 'block'; // Показываем меню
 });
@@ -1038,7 +1042,7 @@ document.querySelectorAll('.difficulty-button').forEach(button => {
         resetKeyboard(); 
         startTimer(); // Запускаем новый таймер
 
-        // Проверяем готовность рекламы к показу
+     /*   // Проверяем готовность рекламы к показу
         vkBridge.send('VKWebAppCheckNativeAds', { ad_format: 'interstitial' })
             .then((data) => {
                 if (data.result) { // Если реклама готова
@@ -1060,7 +1064,7 @@ document.querySelectorAll('.difficulty-button').forEach(button => {
             })
             .catch((error) => {
                 console.log(error); // Ошибка проверки рекламы
-            });
+            }); */
 
         // Закрываем меню
         menuPopup.style.display = 'none'; // Закрываем меню
